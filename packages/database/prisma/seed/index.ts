@@ -15,11 +15,11 @@ function csvPath(name: string): string {
 
 type Row = Record<string, string>;
 
-async function seedTable(
+async function seedTable<T>(
   label: string,
   file: string,
-  mapRow: (row: Row) => Record<string, unknown>,
-  createMany: (rows: Record<string, unknown>[]) => Promise<{ count: number }>,
+  mapRow: (row: Row) => T,
+  createMany: (rows: T[]) => Promise<{ count: number }>,
 ): Promise<void> {
   const start = Date.now();
   let count = 0;
@@ -40,7 +40,7 @@ async function main(): Promise<void> {
     "Wilayah",
     "referensi_wilayah.csv",
     (r) => ({
-      kodeWilayah: r.kode_wilayah,
+      kodeWilayah: r.kode_wilayah!,
       provinsi: toStr(r.provinsi),
       kabKota: toStr(r.kab_kota),
       kecamatan: toStr(r.kecamatan),
@@ -54,7 +54,7 @@ async function main(): Promise<void> {
     "JenisDokumen",
     "referensi_dokumen_koperasi.csv",
     (r) => ({
-      jenisDokumenRef: r.jenis_dokumen_ref,
+      jenisDokumenRef: r.jenis_dokumen_ref!,
       namaDokumen: toStr(r.nama_dokumen),
       dibuatPada: toDate(r.dibuat_pada)!,
       diperbaruiPada: toDate(r.diperbarui_pada)!,
@@ -65,7 +65,7 @@ async function main(): Promise<void> {
     "JenisGerai",
     "referensi_gerai_koperasi.csv",
     (r) => ({
-      jenisGeraiRef: r.jenis_gerai_ref,
+      jenisGeraiRef: r.jenis_gerai_ref!,
       namaJenisGerai: toStr(r.nama_jenis_gerai),
       dibuatPada: toDate(r.dibuat_pada)!,
       diperbaruiPada: toDate(r.diperbarui_pada)!,
@@ -78,7 +78,7 @@ async function main(): Promise<void> {
     "ProfilDesa",
     "referensi_profil_desa.csv",
     (r) => ({
-      kodeWilayah: r.kode_wilayah,
+      kodeWilayah: r.kode_wilayah!,
       tahunPopulasi: toInt(r.tahun_populasi),
       totalPenduduk: toInt(r.total_penduduk),
       pendudukLakiLaki: toInt(r.penduduk_laki_laki),
@@ -94,8 +94,8 @@ async function main(): Promise<void> {
     "KomoditasDesa",
     "referensi_komoditas_desa.csv",
     (r) => ({
-      komoditasRef: r.komoditas_ref,
-      kodeWilayah: r.kode_wilayah,
+      komoditasRef: r.komoditas_ref!,
+      kodeWilayah: r.kode_wilayah!,
       namaKomoditas: toStr(r.nama_komoditas),
       luasArea: toStr(r.luas_area),
       volume: toStr(r.volume),
@@ -112,8 +112,8 @@ async function main(): Promise<void> {
     "Koperasi",
     "profil_koperasi.csv",
     (r) => ({
-      koperasiRef: r.koperasi_ref,
-      namaKoperasi: r.nama_koperasi,
+      koperasiRef: r.koperasi_ref!,
+      namaKoperasi: r.nama_koperasi!,
       statusRegistrasi: toStr(r.status_registrasi),
       bentukKoperasi: toStr(r.bentuk_koperasi),
       kategoriUsaha: toStr(r.kategori_usaha),
@@ -137,8 +137,8 @@ async function main(): Promise<void> {
     "KoperasiWilayah",
     "referensi_koperasi_wilayah.csv",
     (r) => ({
-      koperasiRef: r.koperasi_ref,
-      kodeWilayah: r.kode_wilayah,
+      koperasiRef: r.koperasi_ref!,
+      kodeWilayah: r.kode_wilayah!,
       dibuatPada: toDate(r.dibuat_pada)!,
       diperbaruiPada: toDate(r.diperbarui_pada)!,
     }),
@@ -151,7 +151,7 @@ async function main(): Promise<void> {
     "kbli_koperasi.csv",
     (r) => ({
       sourceRowId: toInt(r.__row_id),
-      koperasiRef: r.koperasi_ref,
+      koperasiRef: r.koperasi_ref!,
       kodeKbli: toStr(r.kode_kbli),
       namaKbli: toStr(r.nama_kbli),
       tipeIzinUsaha: toStr(r.tipe_izin_usaha),
@@ -165,9 +165,9 @@ async function main(): Promise<void> {
     "Dokumen",
     "dokumen_koperasi.csv",
     (r) => ({
-      dokumenRef: r.dokumen_ref,
-      koperasiRef: r.koperasi_ref,
-      jenisDokumenRef: toStr(r.jenis_dokumen_ref),
+      dokumenRef: r.dokumen_ref!,
+      koperasiRef: r.koperasi_ref!,
+      jenisDokumenRef: toStr(r.jenis_dokumen_ref!),
       nomor: toStr(r.nomor),
       tanggalBerlaku: toDate(r.tanggal_berlaku),
       tanggalKadaluarsa: toDate(r.tanggal_kadaluarsa),
@@ -182,8 +182,8 @@ async function main(): Promise<void> {
     "Aset",
     "aset_koperasi.csv",
     (r) => ({
-      asetRef: r.aset_ref,
-      koperasiRef: r.koperasi_ref,
+      asetRef: r.aset_ref!,
+      koperasiRef: r.koperasi_ref!,
       namaAset: toStr(r.nama_aset),
       tipeAset: toStr(r.tipe_aset),
       status: toStr(r.status),
@@ -207,9 +207,9 @@ async function main(): Promise<void> {
     "Gerai",
     "gerai_koperasi.csv",
     (r) => ({
-      geraiRef: r.gerai_ref,
-      koperasiRef: r.koperasi_ref,
-      jenisGeraiRef: toStr(r.jenis_gerai_ref),
+      geraiRef: r.gerai_ref!,
+      koperasiRef: r.koperasi_ref!,
+      jenisGeraiRef: toStr(r.jenis_gerai_ref!),
       statusGerai: toStr(r.status_gerai),
       fotoGerai: toStr(r.foto_gerai),
       pengisi: toStr(r.pengisi),
@@ -229,8 +229,8 @@ async function main(): Promise<void> {
     "Modal",
     "modal_koperasi.csv",
     (r) => ({
-      modalRef: r.modal_ref,
-      koperasiRef: r.koperasi_ref,
+      modalRef: r.modal_ref!,
+      koperasiRef: r.koperasi_ref!,
       nomorPerjanjian: toStr(r.nomor_perjanjian),
       tipeSumber: toStr(r.tipe_sumber),
       namaSumber: toStr(r.nama_sumber),
@@ -247,8 +247,8 @@ async function main(): Promise<void> {
     "AkunBank",
     "akun_bank_koperasi.csv",
     (r) => ({
-      akunBankRef: r.akun_bank_ref,
-      koperasiRef: r.koperasi_ref,
+      akunBankRef: r.akun_bank_ref!,
+      koperasiRef: r.koperasi_ref!,
       namaRekening: toStr(r.nama_rekening),
       namaBank: toStr(r.nama_bank),
       dibuatPada: toDate(r.dibuat_pada)!,
@@ -260,8 +260,8 @@ async function main(): Promise<void> {
     "Pengurus",
     "pengurus_koperasi.csv",
     (r) => ({
-      pengurusRef: r.pengurus_ref,
-      koperasiRef: r.koperasi_ref,
+      pengurusRef: r.pengurus_ref!,
+      koperasiRef: r.koperasi_ref!,
       nama: toStr(r.nama),
       jabatan: toStr(r.jabatan),
       status: toStr(r.status),
@@ -287,8 +287,8 @@ async function main(): Promise<void> {
     "Karyawan",
     "karyawan_koperasi.csv",
     (r) => ({
-      karyawanRef: r.karyawan_ref,
-      koperasiRef: r.koperasi_ref,
+      karyawanRef: r.karyawan_ref!,
+      koperasiRef: r.koperasi_ref!,
       nama: toStr(r.nama),
       jabatan: toStr(r.jabatan),
       nomorHpKaryawan: toStr(r.nomor_hp_karyawan),
@@ -305,8 +305,8 @@ async function main(): Promise<void> {
     "PengajuanDomain",
     "pengajuan_domain.csv",
     (r) => ({
-      domainRef: r.domain_ref,
-      koperasiRef: r.koperasi_ref,
+      domainRef: r.domain_ref!,
+      koperasiRef: r.koperasi_ref!,
       domainKoperasi: toStr(r.domain_koperasi),
       statusVerifikasi: toStr(r.status_verifikasi),
       statusDomain: toStr(r.status_domain),
@@ -319,8 +319,8 @@ async function main(): Promise<void> {
     "PengajuanKemitraan",
     "pengajuan_kemitraan.csv",
     (r) => ({
-      pengajuanKemitraanRef: r.pengajuan_kemitraan_ref,
-      koperasiRef: r.koperasi_ref,
+      pengajuanKemitraanRef: r.pengajuan_kemitraan_ref!,
+      koperasiRef: r.koperasi_ref!,
       nik: toStr(r.nik),
       penanggungJawab: toStr(r.penanggung_jawab),
       nomorPenanggungJawab: toStr(r.nomor_penanggung_jawab),
@@ -340,8 +340,8 @@ async function main(): Promise<void> {
     "PengajuanPembiayaan",
     "pengajuan_pembiayaan.csv",
     (r) => ({
-      pengajuanPembiayaanRef: r.pengajuan_pembiayaan_ref,
-      koperasiRef: r.koperasi_ref,
+      pengajuanPembiayaanRef: r.pengajuan_pembiayaan_ref!,
+      koperasiRef: r.koperasi_ref!,
       nik: toStr(r.nik),
       penanggungJawab: toStr(r.penanggung_jawab),
       nomorPenanggungJawab: toStr(r.nomor_penanggung_jawab),
@@ -359,8 +359,8 @@ async function main(): Promise<void> {
     "PengajuanRekeningBank",
     "pengajuan_rekening_bank.csv",
     (r) => ({
-      pengajuanRekeningRef: r.pengajuan_rekening_ref,
-      koperasiRef: r.koperasi_ref,
+      pengajuanRekeningRef: r.pengajuan_rekening_ref!,
+      koperasiRef: r.koperasi_ref!,
       nik: toStr(r.nik),
       penanggungJawab: toStr(r.penanggung_jawab),
       nomorPenanggungJawab: toStr(r.nomor_penanggung_jawab),
@@ -378,11 +378,11 @@ async function main(): Promise<void> {
     "Anggota",
     "anggota_koperasi.csv",
     (r) => ({
-      anggotaRef: r.anggota_ref,
-      koperasiRef: r.koperasi_ref,
+      anggotaRef: r.anggota_ref!,
+      koperasiRef: r.koperasi_ref!,
       nama: toStr(r.nama),
       nik: toStr(r.nik),
-      kodeWilayah: toStr(r.kode_wilayah),
+      kodeWilayah: toStr(r.kode_wilayah!),
       jenisKelamin: toStr(r.jenis_kelamin),
       statusKeanggotaan: toStr(r.status_keanggotaan),
       tanggalTerdaftar: toDate(r.tanggal_terdaftar),
@@ -400,8 +400,8 @@ async function main(): Promise<void> {
     "Produk",
     "produk_koperasi.csv",
     (r) => ({
-      produkSampleId: r.produk_sample_id,
-      koperasiRef: r.koperasi_ref,
+      produkSampleId: r.produk_sample_id!,
+      koperasiRef: r.koperasi_ref!,
       kodeBarcode: toStr(r.kode_barcode),
       namaProduk: toStr(r.nama_produk),
       unit: toStr(r.unit),
@@ -416,9 +416,9 @@ async function main(): Promise<void> {
     "Inventaris",
     "inventaris_produk.csv",
     (r) => ({
-      inventarisRef: r.inventaris_ref,
-      produkSampleId: r.produk_sample_id,
-      koperasiRef: r.koperasi_ref,
+      inventarisRef: r.inventaris_ref!,
+      produkSampleId: r.produk_sample_id!,
+      koperasiRef: r.koperasi_ref!,
       namaProduk: toStr(r.nama_produk),
       stok: toInt(r.stok),
       kodeBarcode: toStr(r.kode_barcode),
@@ -431,9 +431,9 @@ async function main(): Promise<void> {
     "BarangMasuk",
     "barang_masuk_produk.csv",
     (r) => ({
-      barangMasukRef: r.barang_masuk_ref,
-      produkSampleId: r.produk_sample_id,
-      koperasiRef: r.koperasi_ref,
+      barangMasukRef: r.barang_masuk_ref!,
+      produkSampleId: r.produk_sample_id!,
+      koperasiRef: r.koperasi_ref!,
       kodeBarcode: toStr(r.kode_barcode),
       namaProduk: toStr(r.nama_produk),
       namaTampilan: toStr(r.nama_tampilan),
@@ -456,8 +456,8 @@ async function main(): Promise<void> {
     "TransaksiPenjualan",
     "transaksi_penjualan.csv",
     (r) => ({
-      transaksiSampleId: r.transaksi_sample_id,
-      koperasiRef: r.koperasi_ref,
+      transaksiSampleId: r.transaksi_sample_id!,
+      koperasiRef: r.koperasi_ref!,
       namaPelanggan: toStr(r.nama_pelanggan),
       tanggalDibuat: toDate(r.tanggal_dibuat),
       totalPembayaran: toDecimal(r.total_pembayaran),
@@ -475,9 +475,9 @@ async function main(): Promise<void> {
     "barang_keluar_produk.csv",
     (r) => ({
       sourceRowId: toInt(r.__row_id),
-      transaksiSampleId: r.transaksi_sample_id,
-      produkSampleId: r.produk_sample_id,
-      koperasiRef: r.koperasi_ref,
+      transaksiSampleId: r.transaksi_sample_id!,
+      produkSampleId: r.produk_sample_id!,
+      koperasiRef: r.koperasi_ref!,
       kodeBarcode: toStr(r.kode_barcode),
       tanggalKeluar: toDate(r.tanggal_keluar),
       status: toStr(r.status),
@@ -498,9 +498,9 @@ async function main(): Promise<void> {
     "Simpanan",
     "simpanan_anggota.csv",
     (r) => ({
-      simpananRef: r.simpanan_ref,
-      koperasiRef: r.koperasi_ref,
-      anggotaRef: r.anggota_ref,
+      simpananRef: r.simpanan_ref!,
+      koperasiRef: r.koperasi_ref!,
+      anggotaRef: r.anggota_ref!,
       periodePembayaran: toStr(r.periode_pembayaran),
       jumlahSimpanan: toDecimal(r.jumlah_simpanan),
       status: toStr(r.status),
@@ -515,8 +515,8 @@ async function main(): Promise<void> {
     "Rat",
     "rat_koperasi.csv",
     (r) => ({
-      ratSampleId: r.rat_sample_id,
-      koperasiRef: r.koperasi_ref,
+      ratSampleId: r.rat_sample_id!,
+      koperasiRef: r.koperasi_ref!,
       jenisSektorKoperasi: toStr(r.jenis_sektor_koperasi),
       urutanRat: toInt(r.urutan_rat),
       tahunBuku: toInt(r.tahun_buku),
