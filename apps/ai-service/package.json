@@ -1,0 +1,14 @@
+{
+  "name": "@temuniaga/ai-service",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "setup": "uv venv .venv && uv pip install -r requirements.txt --python .venv/bin/python",
+    "dev": ".venv/bin/uvicorn app.main:app --reload --port 8000",
+    "build": "echo 'no build step for ai-service (Python, no compilation)'",
+    "start": ".venv/bin/uvicorn app.main:app --port 8000",
+    "typecheck": "echo 'no typecheck configured for ai-service (Python)'",
+    "lint": "echo 'no lint configured for ai-service app'",
+    "test": "echo 'no tests configured for ai-service app'"
+  }
+}
