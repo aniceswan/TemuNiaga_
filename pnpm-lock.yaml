@@ -18,6 +18,49 @@ importers:
         specifier: ^5.6.0
         version: 5.9.3
 
+  apps/admin-portal:
+    dependencies:
+      '@temuniaga/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@temuniaga/shared-types':
+        specifier: workspace:*
+        version: link:../../packages/shared-types
+      '@temuniaga/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      next:
+        specifier: ^14.2.0
+        version: 14.2.35(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react:
+        specifier: ^18.3.0
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.0
+        version: 18.3.1(react@18.3.1)
+    devDependencies:
+      '@types/node':
+        specifier: ^20.14.0
+        version: 20.19.43
+      '@types/react':
+        specifier: ^18.3.0
+        version: 18.3.31
+      '@types/react-dom':
+        specifier: ^18.3.0
+        version: 18.3.7(@types/react@18.3.31)
+      autoprefixer:
+        specifier: ^10.4.20
+        version: 10.5.2(postcss@8.5.16)
+      postcss:
+        specifier: ^8.4.47
+        version: 8.5.16
+      tailwindcss:
+        specifier: ^3.4.0
+        version: 3.4.19(tsx@4.23.0)
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
   apps/api:
     dependencies:
       '@nestjs/common':
@@ -76,11 +119,91 @@ importers:
         specifier: ^5.6.0
         version: 5.9.3
 
+  apps/buyer-portal:
+    dependencies:
+      '@temuniaga/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@temuniaga/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      next:
+        specifier: ^14.2.0
+        version: 14.2.35(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react:
+        specifier: ^18.3.0
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.0
+        version: 18.3.1(react@18.3.1)
+    devDependencies:
+      '@types/node':
+        specifier: ^20.14.0
+        version: 20.19.43
+      '@types/react':
+        specifier: ^18.3.0
+        version: 18.3.31
+      '@types/react-dom':
+        specifier: ^18.3.0
+        version: 18.3.7(@types/react@18.3.31)
+      autoprefixer:
+        specifier: ^10.4.20
+        version: 10.5.2(postcss@8.5.16)
+      postcss:
+        specifier: ^8.4.47
+        version: 8.5.16
+      tailwindcss:
+        specifier: ^3.4.0
+        version: 3.4.19(tsx@4.23.0)
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
   apps/koperasi-dashboard:
     dependencies:
       '@temuniaga/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@temuniaga/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@temuniaga/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      next:
+        specifier: ^14.2.0
+        version: 14.2.35(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react:
+        specifier: ^18.3.0
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.0
+        version: 18.3.1(react@18.3.1)
+    devDependencies:
+      '@types/node':
+        specifier: ^20.14.0
+        version: 20.19.43
+      '@types/react':
+        specifier: ^18.3.0
+        version: 18.3.31
+      '@types/react-dom':
+        specifier: ^18.3.0
+        version: 18.3.7(@types/react@18.3.31)
+      autoprefixer:
+        specifier: ^10.4.20
+        version: 10.5.2(postcss@8.5.16)
+      postcss:
+        specifier: ^8.4.47
+        version: 8.5.16
+      tailwindcss:
+        specifier: ^3.4.0
+        version: 3.4.19(tsx@4.23.0)
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
+  apps/public-web:
+    dependencies:
       '@temuniaga/database':
         specifier: workspace:*
         version: link:../../packages/database
