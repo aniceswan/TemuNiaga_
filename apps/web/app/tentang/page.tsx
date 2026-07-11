@@ -27,7 +27,7 @@ export default async function TentangPage() {
 
   return (
     <AppShell appName="Tentang TemuNiaga" nav={<SiteNav />}>
-      <section className="pattern-corak-hero -mx-4 mb-12 rounded-2xl border border-brand-200 bg-white p-6 dark:border-brand-800/50 dark:bg-brand-900 sm:-mx-6 sm:p-8">
+      <section className="-mx-4 mb-12 rounded-2xl border border-brand-100 bg-brand-50 p-6 dark:border-brand-800/50 dark:bg-brand-900 sm:-mx-6 sm:p-8">
         <Badge tone="brand" className="mb-4">
           Kemenkop RI · Koperasi Desa Merah Putih
         </Badge>

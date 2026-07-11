@@ -5,34 +5,3 @@
 ::selection {
   @apply bg-brand-200 text-brand-900;
 }
-
-/* Subtle woven-lattice "corak" texture -- diagonal crosshatch evoking
-   anyaman bambu/rotan, kept faint so it never fights page content. */
-.pattern-corak {
-  background-image:
-    repeating-linear-gradient(45deg, rgba(43, 102, 64, 0.1) 0px, rgba(43, 102, 64, 0.1) 1.5px, transparent 1.5px, transparent 15px),
-    repeating-linear-gradient(-45deg, rgba(43, 102, 64, 0.1) 0px, rgba(43, 102, 64, 0.1) 1.5px, transparent 1.5px, transparent 15px);
-}
-
-@media (prefers-color-scheme: dark) {
-  .pattern-corak {
-    background-image:
-      repeating-linear-gradient(45deg, rgba(143, 189, 153, 0.12) 0px, rgba(143, 189, 153, 0.12) 1.5px, transparent 1.5px, transparent 15px),
-      repeating-linear-gradient(-45deg, rgba(143, 189, 153, 0.12) 0px, rgba(143, 189, 153, 0.12) 1.5px, transparent 1.5px, transparent 15px);
-  }
-}
-
-/* Bolder version for hero/banner sections -- same motif, larger cells. */
-.pattern-corak-hero {
-  background-image:
-    repeating-linear-gradient(45deg, rgba(43, 102, 64, 0.09) 0px, rgba(43, 102, 64, 0.09) 2px, transparent 2px, transparent 22px),
-    repeating-linear-gradient(-45deg, rgba(43, 102, 64, 0.09) 0px, rgba(43, 102, 64, 0.09) 2px, transparent 2px, transparent 22px);
-}
-
-@media (prefers-color-scheme: dark) {
-  .pattern-corak-hero {
-    background-image:
-      repeating-linear-gradient(45deg, rgba(143, 189, 153, 0.1) 0px, rgba(143, 189, 153, 0.1) 2px, transparent 2px, transparent 22px),
-      repeating-linear-gradient(-45deg, rgba(143, 189, 153, 0.1) 0px, rgba(143, 189, 153, 0.1) 2px, transparent 2px, transparent 22px);
-  }
-}

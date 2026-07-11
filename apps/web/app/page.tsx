@@ -5,7 +5,7 @@ import { SiteNav } from "../components/site-nav";
 export default function PublicHomePage() {
   return (
     <AppShell appName="Beranda" nav={<SiteNav />}>
-      <section className="pattern-corak-hero -mx-4 flex min-h-[60vh] flex-col items-center justify-center rounded-2xl border border-brand-200 bg-white px-4 text-center dark:border-brand-800/50 dark:bg-brand-900 sm:-mx-6 sm:px-6">
+      <section className="-mx-4 flex min-h-[60vh] flex-col items-center justify-center rounded-2xl border border-brand-100 bg-brand-50 px-4 text-center dark:border-brand-800/50 dark:bg-brand-900 sm:-mx-6 sm:px-6">
         <Badge tone="brand" className="mb-4">
           Kemenkop RI · Koperasi Desa Merah Putih
         </Badge>
