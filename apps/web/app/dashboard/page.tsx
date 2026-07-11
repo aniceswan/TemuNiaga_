@@ -26,11 +26,18 @@ export default async function DashboardHomePage() {
     <AppShell appName="Dashboard Kopdes" nav={<SiteNav />}>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-50">Beranda Operator</h1>
-        <Link href="/dashboard/wa">
-          <Button variant="outline" size="sm">
-            Registrasi Nomor WhatsApp
-          </Button>
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/dashboard/produk">
+            <Button variant="outline" size="sm">
+              Kelola Produk Marketplace
+            </Button>
+          </Link>
+          <Link href="/dashboard/wa">
+            <Button variant="outline" size="sm">
+              Registrasi Nomor WhatsApp
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">

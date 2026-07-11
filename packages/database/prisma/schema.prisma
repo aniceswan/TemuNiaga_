@@ -133,6 +133,7 @@ model Koperasi {
   pengajuanRekeningBank PengajuanRekeningBank[]
   produk           Produk[]
   inventaris       Inventaris[]
+  pesanan          Pesanan[]
   barangMasuk      BarangMasuk[]
   barangKeluar     BarangKeluar[]
   transaksi        TransaksiPenjualan[]
@@ -425,16 +426,55 @@ model Produk {
   kodeBarcode    String?  @map("kode_barcode")
   namaProduk     String?  @map("nama_produk")
   unit           String?
+  // Harga jual saat ini untuk marketplace publik -- diisi manual oleh operator
+  // kopdes lewat dashboard, atau dibackfill dari harga_jual terbaru di
+  // barang_masuk_produk. NULL berarti belum dijual di marketplace.
+  hargaJual      Decimal? @map("harga_jual") @db.Decimal(18, 2)
   dibuatPada     DateTime @map("dibuat_pada")
   diperbaruiPada DateTime @map("diperbarui_pada")
 
   inventaris   Inventaris[]
   barangMasuk  BarangMasuk[]
   barangKeluar BarangKeluar[]
+  pesananItem  PesananItem[]
 
   @@index([koperasiRef])
   @@index([kodeBarcode])
   @@map("produk_koperasi")
+}
+
+/// Pesanan marketplace B2C -- satu Pesanan per kopdes per checkout (gaya
+/// Shopee: keranjang lintas-kopdes dipecah jadi beberapa Pesanan saat submit).
+model Pesanan {
+  pesananRef    String   @id @default(cuid())
+  koperasiRef   String   @map("koperasi_ref")
+  koperasi      Koperasi @relation(fields: [koperasiRef], references: [koperasiRef])
+  namaPembeli   String   @map("nama_pembeli")
+  teleponPembeli String  @map("telepon_pembeli")
+  alamatPembeli String   @map("alamat_pembeli")
+  totalHarga    Decimal  @map("total_harga") @db.Decimal(18, 2)
+  status        String   @default("Baru")
+  dibuatPada    DateTime @default(now()) @map("dibuat_pada")
+
+  items PesananItem[]
+
+  @@index([koperasiRef])
+  @@map("pesanan")
+}
+
+model PesananItem {
+  id             String   @id @default(cuid())
+  pesananRef     String   @map("pesanan_ref")
+  pesanan        Pesanan  @relation(fields: [pesananRef], references: [pesananRef])
+  produkSampleId String   @map("produk_sample_id")
+  produk         Produk   @relation(fields: [produkSampleId], references: [produkSampleId])
+  namaProduk     String   @map("nama_produk")
+  hargaSatuan    Decimal  @map("harga_satuan") @db.Decimal(18, 2)
+  jumlah         Int
+  subtotal       Decimal  @map("subtotal") @db.Decimal(18, 2)
+
+  @@index([pesananRef])
+  @@map("pesanan_item")
 }
 
 model Inventaris {

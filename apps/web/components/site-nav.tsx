@@ -3,9 +3,12 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@temuniaga/ui";
+import { useCart } from "../lib/cart-context";
 
 const LINKS = [
   { href: "/", label: "Beranda" },
+  { href: "/marketplace", label: "Marketplace" },
+  { href: "/tentang", label: "Tentang" },
   { href: "/koperasi", label: "Koperasi" },
   { href: "/dashboard", label: "Dashboard Kopdes" },
   { href: "/buyer", label: "Buyer Portal" },
@@ -18,6 +21,7 @@ export function SiteNav() {
   const pathname = usePathname();
   const router = useRouter();
   const showLogout = PROTECTED_PREFIXES.some((prefix) => pathname?.startsWith(prefix));
+  const { totalItems } = useCart();
 
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -44,6 +48,17 @@ export function SiteNav() {
           </Link>
         );
       })}
+      <Link
+        href="/marketplace/keranjang"
+        className="relative whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium text-stone-600 transition-colors hover:bg-stone-100 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100"
+      >
+        Keranjang
+        {totalItems > 0 ? (
+          <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-harvest-500 px-1 text-xs font-bold text-white">
+            {totalItems}
+          </span>
+        ) : null}
+      </Link>
       {showLogout ? (
         <button
           type="button"

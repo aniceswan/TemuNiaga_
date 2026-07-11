@@ -42,3 +42,28 @@ export interface KoperasiListResponse {
 export function getKoperasiList(pageSize = 20): Promise<KoperasiListResponse> {
   return apiGet<KoperasiListResponse>(`/koperasi?pageSize=${pageSize}`);
 }
+
+export interface ProdukSummary {
+  produkSampleId: string;
+  koperasiRef: string;
+  namaKoperasi: string;
+  namaProduk: string | null;
+  unit: string | null;
+  hargaJual: string;
+  stok: number;
+}
+
+export interface ProdukListResponse {
+  total: number;
+  page: number;
+  pageSize: number;
+  items: ProdukSummary[];
+}
+
+export function getMarketplaceProduk(opts: { page?: number; search?: string } = {}): Promise<ProdukListResponse> {
+  const params = new URLSearchParams();
+  if (opts.page) params.set("page", String(opts.page));
+  if (opts.search) params.set("search", opts.search);
+  const qs = params.toString();
+  return apiGet<ProdukListResponse>(`/produk${qs ? `?${qs}` : ""}`);
+}
