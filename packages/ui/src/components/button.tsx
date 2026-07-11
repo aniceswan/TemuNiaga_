@@ -7,9 +7,10 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const VARIANT_CLASSES: Record<NonNullable<ButtonProps["variant"]>, string> = {
-  default: "bg-brand-600 text-white hover:bg-brand-700 shadow-sm",
-  accent: "bg-harvest-500 text-white hover:bg-harvest-600 shadow-sm",
-  outline: "border border-stone-300 text-stone-700 hover:bg-stone-100 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800",
+  default: "bg-brand-600 text-white shadow-sm hover:bg-brand-700 hover:shadow-md active:bg-brand-800",
+  accent: "bg-harvest-500 text-white shadow-sm hover:bg-harvest-600 hover:shadow-md active:bg-harvest-700",
+  outline:
+    "border border-stone-300 text-stone-700 hover:border-brand-300 hover:bg-brand-50 dark:border-stone-700 dark:text-stone-200 dark:hover:border-brand-700 dark:hover:bg-brand-950/40",
   ghost: "text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800",
 };
 
@@ -24,7 +25,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     <button
       ref={ref}
       className={cn(
-        "inline-flex items-center justify-center gap-1.5 rounded-lg font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+        "inline-flex items-center justify-center gap-1.5 rounded-full font-medium transition-all duration-150 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 disabled:active:scale-100",
         VARIANT_CLASSES[variant],
         SIZE_CLASSES[size],
         className,

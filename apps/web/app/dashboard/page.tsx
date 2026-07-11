@@ -25,7 +25,7 @@ export default async function DashboardHomePage() {
   return (
     <AppShell appName="Dashboard Kopdes" nav={<SiteNav />}>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-50">Beranda Operator</h1>
+        <h1 className="font-display text-2xl font-semibold tracking-tight text-stone-900 dark:text-stone-50">Beranda Operator</h1>
         <div className="flex flex-wrap gap-2">
           <Link href="/dashboard/produk">
             <Button variant="outline" size="sm">
@@ -43,7 +43,7 @@ export default async function DashboardHomePage() {
       <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card>
           <CardHeader>
-            <CardTitle>Koperasi Terdaftar</CardTitle>
+            <CardTitle variant="eyebrow">Koperasi Terdaftar</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-brand-600 dark:text-brand-400">
@@ -53,7 +53,7 @@ export default async function DashboardHomePage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Anggota Aktif</CardTitle>
+            <CardTitle variant="eyebrow">Anggota Aktif</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-brand-600 dark:text-brand-400">
@@ -63,7 +63,7 @@ export default async function DashboardHomePage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Total Simpanan</CardTitle>
+            <CardTitle variant="eyebrow">Total Simpanan</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-harvest-600 dark:text-harvest-400">

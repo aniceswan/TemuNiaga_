@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Button, Card, CardContent, CardHeader, CardTitle } from "@temuniaga/ui";
+import { Button, Card, CardContent, CardHeader, CardTitle, Input, Textarea } from "@temuniaga/ui";
 import { useCart } from "../../../lib/cart-context";
 
 function formatRupiah(value: number): string {
@@ -80,12 +80,12 @@ export function CartCheckout() {
                 <p className="text-sm text-brand-600 dark:text-brand-400">{formatRupiah(item.hargaJual)}</p>
               </div>
               <div className="flex items-center gap-2">
-                <input
+                <Input
                   type="number"
                   min={1}
                   value={item.jumlah}
                   onChange={(e) => updateQty(item.produkSampleId, Number(e.target.value))}
-                  className="w-16 rounded-md border border-stone-300 px-2 py-1 text-sm dark:border-stone-700 dark:bg-stone-900"
+                  className="w-16 py-1.5"
                 />
                 <button
                   type="button"
@@ -109,28 +109,25 @@ export function CartCheckout() {
             Total: {formatRupiah(totalHarga)}
           </p>
           <form onSubmit={handleCheckout} className="space-y-3">
-            <input
+            <Input
               type="text"
               required
               placeholder="Nama Anda"
               value={form.namaPembeli}
               onChange={(e) => setForm((f) => ({ ...f, namaPembeli: e.target.value }))}
-              className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm dark:border-stone-700 dark:bg-stone-900"
             />
-            <input
+            <Input
               type="text"
               required
               placeholder="Nomor WhatsApp"
               value={form.teleponPembeli}
               onChange={(e) => setForm((f) => ({ ...f, teleponPembeli: e.target.value }))}
-              className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm dark:border-stone-700 dark:bg-stone-900"
             />
-            <textarea
+            <Textarea
               required
               placeholder="Alamat pengiriman"
               value={form.alamatPembeli}
               onChange={(e) => setForm((f) => ({ ...f, alamatPembeli: e.target.value }))}
-              className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm dark:border-stone-700 dark:bg-stone-900"
               rows={3}
             />
             <Button type="submit" className="w-full" disabled={submitting}>

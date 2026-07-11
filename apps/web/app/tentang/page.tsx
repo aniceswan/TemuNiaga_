@@ -31,7 +31,7 @@ export default async function TentangPage() {
         <Badge tone="brand" className="mb-4">
           Kemenkop RI · Koperasi Desa Merah Putih
         </Badge>
-        <h1 className="mb-3 max-w-2xl text-4xl font-bold tracking-tight text-stone-900 dark:text-stone-50">
+        <h1 className="mb-3 max-w-2xl font-display text-4xl font-semibold tracking-tight text-stone-900 dark:text-stone-50">
           Cooperative Trade Operating System
         </h1>
         <p className="mb-6 max-w-2xl text-lg leading-relaxed text-stone-600 dark:text-stone-400">
@@ -55,7 +55,7 @@ export default async function TentangPage() {
       <div className="mb-12 grid grid-cols-2 gap-4 sm:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Koperasi Terdaftar</CardTitle>
+            <CardTitle variant="eyebrow">Koperasi Terdaftar</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-brand-600 dark:text-brand-400">
@@ -65,7 +65,7 @@ export default async function TentangPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Anggota Aktif</CardTitle>
+            <CardTitle variant="eyebrow">Anggota Aktif</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-brand-600 dark:text-brand-400">
@@ -82,9 +82,7 @@ export default async function TentangPage() {
         {PILLARS.map((pillar) => (
           <Card key={pillar.title}>
             <CardHeader>
-              <CardTitle className="text-base normal-case tracking-normal text-stone-900 dark:text-stone-100">
-                {pillar.title}
-              </CardTitle>
+              <CardTitle>{pillar.title}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-stone-500 dark:text-stone-400">{pillar.description}</p>

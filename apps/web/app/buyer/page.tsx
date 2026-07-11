@@ -5,7 +5,7 @@ import { SiteNav } from "../../components/site-nav";
 export default function BuyerPortalHomePage() {
   return (
     <AppShell appName="Buyer Portal" nav={<SiteNav />}>
-      <h1 className="mb-1 text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-50">
+      <h1 className="mb-1 font-display text-2xl font-semibold tracking-tight text-stone-900 dark:text-stone-50">
         RFQ &amp; Procurement
       </h1>
       <p className="mb-6 max-w-2xl text-sm text-stone-500 dark:text-stone-400">
@@ -15,11 +15,9 @@ export default function BuyerPortalHomePage() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {MOCK_RFQS.map((rfq) => (
-          <Card key={rfq.id}>
+          <Card key={rfq.id} interactive>
             <CardHeader>
-              <CardTitle className="text-base normal-case tracking-normal text-stone-900 dark:text-stone-100">
-                {rfq.commodity}
-              </CardTitle>
+              <CardTitle>{rfq.commodity}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-1.5 text-sm text-stone-500 dark:text-stone-400">
               <p>

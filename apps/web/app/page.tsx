@@ -9,7 +9,7 @@ export default function PublicHomePage() {
         <Badge tone="brand" className="mb-4">
           Kemenkop RI · Koperasi Desa Merah Putih
         </Badge>
-        <h1 className="mb-4 max-w-2xl text-4xl font-bold tracking-tight text-stone-900 dark:text-stone-50">
+        <h1 className="mb-4 max-w-2xl font-display text-5xl font-semibold tracking-tight text-stone-900 dark:text-stone-50 sm:text-6xl">
           TemuNiaga
         </h1>
         <p className="mb-8 max-w-xl text-lg leading-relaxed text-stone-600 dark:text-stone-400">
