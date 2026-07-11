@@ -30,6 +30,7 @@ export async function startBot(): Promise<void> {
   currentStatus = "connecting";
   let reconnectAttempt = 0;
   let selfPhone = "";
+  let selfLid = "";
 
   const socket = makeWASocket({
     auth: state,
@@ -59,7 +60,8 @@ export async function startBot(): Promise<void> {
       reconnectAttempt = 0;
       currentStatus = "connected";
       selfPhone = String(socket.user?.id ?? "").split(":")[0].split("@")[0];
-      console.log("[wa] connected", selfPhone ? `(nomor bot: ${selfPhone})` : "");
+      selfLid = String(socket.user?.lid ?? "").split(":")[0].split("@")[0];
+      console.log("[wa] connected", selfPhone ? `(nomor bot: ${selfPhone}${selfLid ? `, lid: ${selfLid}` : ""})` : "");
     }
     if (update.connection === "close") {
       currentStatus = "disconnected";
@@ -78,22 +80,28 @@ export async function startBot(): Promise<void> {
     if (batch.type !== "notify" || !Array.isArray(batch.messages)) return;
 
     for (const msg of batch.messages) {
-      if (!msg || !msg.message) continue;
+      if (!msg || msg.key?.fromMe || !msg.message) continue;
       const jid = String(msg.key?.remoteJid ?? "");
-      if (!jid.endsWith("@s.whatsapp.net")) continue;
-      const phone = jid.slice(0, -"@s.whatsapp.net".length);
+      let phone = "";
+
+      if (jid.endsWith("@s.whatsapp.net")) {
+        phone = jid.slice(0, -"@s.whatsapp.net".length).split(":")[0];
+      } else if (jid.endsWith("@lid")) {
+        const lid = jid.slice(0, -"@lid".length);
+        try {
+          phone = JSON.parse(await fs.readFile(path.join(authDir, `lid-mapping-${lid}_reverse.json`), "utf8"));
+        } catch {
+          phone = lid;
+        }
+      } else {
+        continue;
+      }
+      if (!phone) continue;
 
       const messageId = String(msg.key?.id ?? "");
       if (!messageId || processedMessageIds.has(messageId)) continue;
-
-      // fromMe is true both for our own replies AND for the human typing in
-      // a self-chat (bot's own number messaging itself) -- only the latter
-      // should be processed, distinguished via ownSentMessageIds.
-      if (msg.key?.fromMe) {
-        if (phone !== selfPhone || ownSentMessageIds.has(messageId)) continue;
-      }
       processedMessageIds.add(messageId);
-      console.log(`[wa] pesan masuk dari ${phone}${phone === selfPhone ? " (self-chat)" : ""}`);
+      console.log(`[wa] pesan masuk dari ${phone} (jid: ${jid})`);
 
       try {
         const audio = msg.message.audioMessage;
