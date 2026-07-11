@@ -15,6 +15,11 @@ export class RefreshHargaDto {
   @IsNotEmpty()
   varId!: string;
 
+  /** BPS year-id ("th"), required by webapi -- e.g. "123" = 2023. Look up valid values via BPS's var/th list for your dataset. */
+  @IsString()
+  @IsNotEmpty()
+  th!: string;
+
   @IsString()
   @IsOptional()
   region?: string;

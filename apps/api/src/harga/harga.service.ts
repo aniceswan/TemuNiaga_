@@ -9,7 +9,7 @@ export class HargaService {
 
   /** Fetches a BPS dynamic-table series and caches its price distribution for cek_harga lookups. */
   async refreshFromBps(dto: RefreshHargaDto) {
-    const values = await fetchBpsSeries({ domain: dto.domain, varId: dto.varId });
+    const values = await fetchBpsSeries({ domain: dto.domain, varId: dto.varId, th: dto.th });
     const { min, median, max } = summarize(values);
 
     const commodity = await this.prisma.client.commodity.upsert({

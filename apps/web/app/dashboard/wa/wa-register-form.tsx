@@ -1,0 +1,129 @@
+"use client";
+
+import { useState } from "react";
+import { Button, Card, CardContent, CardHeader, CardTitle } from "@temuniaga/ui";
+import type { KoperasiSummary, AnggotaSummary } from "@temuniaga/contracts";
+
+export function WaRegisterForm({ koperasiList }: { koperasiList: KoperasiSummary[] }) {
+  const [phone, setPhone] = useState("");
+  const [koperasiRef, setKoperasiRef] = useState("");
+  const [anggotaRef, setAnggotaRef] = useState("");
+  const [anggotaOptions, setAnggotaOptions] = useState<AnggotaSummary[]>([]);
+  const [loadingAnggota, setLoadingAnggota] = useState(false);
+  const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleKoperasiChange(ref: string) {
+    setKoperasiRef(ref);
+    setAnggotaRef("");
+    setAnggotaOptions([]);
+    if (!ref) return;
+
+    setLoadingAnggota(true);
+    const res = await fetch(`/api/anggota?koperasiRef=${encodeURIComponent(ref)}`);
+    const body = await res.json().catch(() => null);
+    setAnggotaOptions(res.ok ? (body?.items ?? []) : []);
+    setLoadingAnggota(false);
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSubmitting(true);
+    setResult(null);
+
+    const res = await fetch("/api/wa/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone, anggotaRef, koperasiRef }),
+    });
+    const body = await res.json().catch(() => null);
+
+    if (res.ok) {
+      setResult({ ok: true, message: `Nomor ${phone} berhasil didaftarkan.` });
+      setPhone("");
+    } else {
+      setResult({ ok: false, message: body?.message ?? "Pendaftaran gagal." });
+    }
+    setSubmitting(false);
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Daftarkan Nomor WhatsApp Anggota</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="mb-4 text-sm text-stone-500 dark:text-stone-400">
+          Hubungkan nomor WhatsApp warga ke data keanggotaan koperasi yang sudah terdaftar, supaya bot WA
+          (HARGA/LAPOR/STATUS) bisa mengenali pesan dari nomor tersebut.
+        </p>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="koperasi" className="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">
+              Koperasi
+            </label>
+            <select
+              id="koperasi"
+              required
+              value={koperasiRef}
+              onChange={(e) => handleKoperasiChange(e.target.value)}
+              className="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:border-stone-700 dark:bg-stone-900"
+            >
+              <option value="">Pilih koperasi...</option>
+              {koperasiList.map((k) => (
+                <option key={k.koperasiRef} value={k.koperasiRef}>
+                  {k.namaKoperasi}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="anggota" className="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">
+              Anggota
+            </label>
+            <select
+              id="anggota"
+              required
+              disabled={!koperasiRef || loadingAnggota}
+              value={anggotaRef}
+              onChange={(e) => setAnggotaRef(e.target.value)}
+              className="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:border-stone-700 dark:bg-stone-900"
+            >
+              <option value="">{loadingAnggota ? "Memuat..." : "Pilih anggota..."}</option>
+              {anggotaOptions.map((a) => (
+                <option key={a.anggotaRef} value={a.anggotaRef}>
+                  {a.nama ?? a.anggotaRef} ({a.anggotaRef})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="phone" className="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">
+              Nomor WhatsApp
+            </label>
+            <input
+              id="phone"
+              type="text"
+              required
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="628123456789"
+              className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:border-stone-700 dark:bg-stone-900"
+            />
+          </div>
+
+          {result ? (
+            <p className={`text-sm ${result.ok ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
+              {result.message}
+            </p>
+          ) : null}
+          <Button type="submit" disabled={submitting || !anggotaRef}>
+            {submitting ? "Menyimpan..." : "Daftarkan"}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}

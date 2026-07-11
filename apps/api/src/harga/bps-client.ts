@@ -17,9 +17,18 @@ interface BpsDataResponse {
 export interface BpsFetchParams {
   domain: string;
   varId: string;
+  /** BPS year-id ("th"), required by webapi for model=data queries -- e.g. "123" = 2023. */
+  th: string;
 }
 
-export async function fetchBpsSeries({ domain, varId }: BpsFetchParams): Promise<number[]> {
+// webapi.bps.go.id sits behind a WAF that blocks requests without a
+// browser-like User-Agent (returns an HTML "Perimeter WAF Block" page
+// instead of JSON) -- found by testing with a real key and comparing a
+// bare fetch() against curl with -A set.
+const BROWSER_USER_AGENT =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36";
+
+export async function fetchBpsSeries({ domain, varId, th }: BpsFetchParams): Promise<number[]> {
   const apiKey = process.env.BPS_API_KEY;
   if (!apiKey) {
     throw new BadRequestException(
@@ -27,10 +36,10 @@ export async function fetchBpsSeries({ domain, varId }: BpsFetchParams): Promise
     );
   }
 
-  const url = `${BPS_BASE_URL}/domain/${domain}/var/${varId}/key/${apiKey}`;
+  const url = `${BPS_BASE_URL}/domain/${domain}/var/${varId}/th/${th}/key/${apiKey}`;
   let response: Response;
   try {
-    response = await fetch(url);
+    response = await fetch(url, { headers: { "User-Agent": BROWSER_USER_AGENT } });
   } catch (err) {
     throw new ServiceUnavailableException(`Gagal menghubungi BPS webapi: ${(err as Error).message}`);
   }
@@ -38,7 +47,14 @@ export async function fetchBpsSeries({ domain, varId }: BpsFetchParams): Promise
     throw new ServiceUnavailableException(`BPS webapi mengembalikan status ${response.status}`);
   }
 
-  const body = (await response.json()) as BpsDataResponse;
+  let body: BpsDataResponse;
+  try {
+    body = (await response.json()) as BpsDataResponse;
+  } catch {
+    throw new ServiceUnavailableException(
+      "BPS webapi mengembalikan respons non-JSON (kemungkinan diblokir WAF atau domain/var/th salah)",
+    );
+  }
   if (body.status !== "OK" || !body.datacontent) {
     throw new ServiceUnavailableException(
       `BPS webapi: data tidak tersedia (status=${body.status}, availability=${body["data-availability"]})`,

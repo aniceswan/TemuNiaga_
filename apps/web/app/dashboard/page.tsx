@@ -1,4 +1,5 @@
-import { AppShell, Badge, Card, CardContent, CardHeader, CardTitle } from "@temuniaga/ui";
+import Link from "next/link";
+import { AppShell, Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@temuniaga/ui";
 import { SiteNav } from "../../components/site-nav";
 import { getDashboardTotals, getKoperasiList } from "../../lib/api";
 
@@ -23,7 +24,14 @@ export default async function DashboardHomePage() {
 
   return (
     <AppShell appName="Dashboard Kopdes" nav={<SiteNav />}>
-      <h1 className="mb-6 text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-50">Beranda Operator</h1>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-50">Beranda Operator</h1>
+        <Link href="/dashboard/wa">
+          <Button variant="outline" size="sm">
+            Registrasi Nomor WhatsApp
+          </Button>
+        </Link>
+      </div>
 
       <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card>
