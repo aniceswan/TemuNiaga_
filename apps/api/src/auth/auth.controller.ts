@@ -1,7 +1,6 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Post, Req } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { LoginDto } from "./login.dto";
-import { JwtAuthGuard } from "./jwt-auth.guard";
 import type { AuthenticatedRequest } from "./authenticated-request";
 
 @Controller("auth")
@@ -14,8 +13,7 @@ export class AuthController {
   }
 
   @Get("me")
-  @UseGuards(JwtAuthGuard)
-  me(@Req() req: AuthenticatedRequest) {
-    return this.authService.me(req.user!.sub);
+  me() {
+    return { id: "public", email: "public@temuniaga.id", name: "Public User", role: "PUBLIC", koperasiRef: null };
   }
 }
