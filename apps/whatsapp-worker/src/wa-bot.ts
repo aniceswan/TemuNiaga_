@@ -8,6 +8,10 @@ import { textToSpeech } from "./tts";
 // Simple in-memory idempotency guard (resets on restart) -- Baileys can
 // redeliver messages.upsert batches around reconnects.
 const processedMessageIds = new Set<string>();
+// IDs of messages the bot itself sent -- lets us allow self-chat (the bot's
+// own number messaging itself, e.g. when operator's phone scanned the QR)
+// without echo-looping on our own replies.
+const ownSentMessageIds = new Set<string>();
 
 export type ConnectionStatus = "disconnected" | "connecting" | "connected";
 let currentStatus: ConnectionStatus = "disconnected";
@@ -25,12 +29,23 @@ export async function startBot(): Promise<void> {
 
   currentStatus = "connecting";
   let reconnectAttempt = 0;
+  let selfPhone = "";
 
   const socket = makeWASocket({
     auth: state,
     browser: ["TemuNiaga", "Chrome", "1.0.0"],
     markOnlineOnConnect: false,
   });
+
+  // Wraps socket.sendMessage so every reply's message ID is remembered --
+  // needed to tell "the human typed this in a self-chat" apart from "this is
+  // our own reply echoing back", since both arrive as fromMe: true.
+  async function send(jid: string, content: any) {
+    const sent = await socket.sendMessage(jid, content);
+    const id = sent?.key?.id;
+    if (id) ownSentMessageIds.add(String(id));
+    return sent;
+  }
 
   socket.ev.on("creds.update", saveCreds);
 
@@ -43,7 +58,8 @@ export async function startBot(): Promise<void> {
     if (update.connection === "open") {
       reconnectAttempt = 0;
       currentStatus = "connected";
-      console.log("[wa] connected");
+      selfPhone = String(socket.user?.id ?? "").split(":")[0].split("@")[0];
+      console.log("[wa] connected", selfPhone ? `(nomor bot: ${selfPhone})` : "");
     }
     if (update.connection === "close") {
       currentStatus = "disconnected";
@@ -62,14 +78,22 @@ export async function startBot(): Promise<void> {
     if (batch.type !== "notify" || !Array.isArray(batch.messages)) return;
 
     for (const msg of batch.messages) {
-      if (!msg || msg.key?.fromMe || !msg.message) continue;
+      if (!msg || !msg.message) continue;
       const jid = String(msg.key?.remoteJid ?? "");
       if (!jid.endsWith("@s.whatsapp.net")) continue;
       const phone = jid.slice(0, -"@s.whatsapp.net".length);
 
       const messageId = String(msg.key?.id ?? "");
       if (!messageId || processedMessageIds.has(messageId)) continue;
+
+      // fromMe is true both for our own replies AND for the human typing in
+      // a self-chat (bot's own number messaging itself) -- only the latter
+      // should be processed, distinguished via ownSentMessageIds.
+      if (msg.key?.fromMe) {
+        if (phone !== selfPhone || ownSentMessageIds.has(messageId)) continue;
+      }
       processedMessageIds.add(messageId);
+      console.log(`[wa] pesan masuk dari ${phone}${phone === selfPhone ? " (self-chat)" : ""}`);
 
       try {
         const audio = msg.message.audioMessage;
@@ -78,20 +102,20 @@ export async function startBot(): Promise<void> {
         if (audio) {
           const mime = String(audio.mimetype ?? "audio/ogg").split(";")[0] ?? "audio/ogg";
           if (typeof audio.fileLength === "number" && audio.fileLength > config.maxAudioBytes) {
-            await socket.sendMessage(jid, { text: "Voice note terlalu besar, kirim pesan yang lebih pendek." });
+            await send(jid, { text: "Voice note terlalu besar, kirim pesan yang lebih pendek." });
             continue;
           }
           try {
             const buffer: Buffer = await downloadMediaMessage(msg, "buffer", {});
             const transcript = await transcribeAudio(buffer.toString("base64"), mime);
             if (!transcript) {
-              await socket.sendMessage(jid, { text: "Suara tidak dapat dikenali, coba ketik pesan teks." });
+              await send(jid, { text: "Suara tidak dapat dikenali, coba ketik pesan teks." });
               continue;
             }
             text = transcript;
           } catch (err) {
             console.error("[wa] audio processing failed:", (err as Error).message);
-            await socket.sendMessage(jid, { text: "Audio tidak dapat diproses." });
+            await send(jid, { text: "Audio tidak dapat diproses." });
             continue;
           }
         } else {
@@ -100,14 +124,14 @@ export async function startBot(): Promise<void> {
         }
 
         const result = await handleMessage(phone, text);
-        await socket.sendMessage(jid, {
+        await send(jid, {
           text: audio ? `🎤 _"${text}"_\n\n${result.reply}` : result.reply,
         });
 
         if (audio) {
           const speech = await textToSpeech(result.reply);
           if (speech) {
-            await socket.sendMessage(jid, {
+            await send(jid, {
               audio: Buffer.from(speech.data, "base64"),
               mimetype: speech.mimeType,
               ptt: speech.mimeType.includes("opus"),
@@ -116,7 +140,7 @@ export async function startBot(): Promise<void> {
         }
       } catch (err) {
         console.error("[wa] message handling error:", (err as Error).message);
-        await socket.sendMessage(jid, { text: "Pesan gagal diproses, silakan coba lagi." }).catch(() => undefined);
+        await send(jid, { text: "Pesan gagal diproses, silakan coba lagi." }).catch(() => undefined);
       }
     }
   });

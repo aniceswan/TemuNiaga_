@@ -10,15 +10,15 @@
    anyaman bambu/rotan, kept faint so it never fights page content. */
 .pattern-corak {
   background-image:
-    repeating-linear-gradient(45deg, rgba(43, 102, 64, 0.055) 0px, rgba(43, 102, 64, 0.055) 1px, transparent 1px, transparent 15px),
-    repeating-linear-gradient(-45deg, rgba(43, 102, 64, 0.055) 0px, rgba(43, 102, 64, 0.055) 1px, transparent 1px, transparent 15px);
+    repeating-linear-gradient(45deg, rgba(43, 102, 64, 0.1) 0px, rgba(43, 102, 64, 0.1) 1.5px, transparent 1.5px, transparent 15px),
+    repeating-linear-gradient(-45deg, rgba(43, 102, 64, 0.1) 0px, rgba(43, 102, 64, 0.1) 1.5px, transparent 1.5px, transparent 15px);
 }
 
 @media (prefers-color-scheme: dark) {
   .pattern-corak {
     background-image:
-      repeating-linear-gradient(45deg, rgba(143, 189, 153, 0.07) 0px, rgba(143, 189, 153, 0.07) 1px, transparent 1px, transparent 15px),
-      repeating-linear-gradient(-45deg, rgba(143, 189, 153, 0.07) 0px, rgba(143, 189, 153, 0.07) 1px, transparent 1px, transparent 15px);
+      repeating-linear-gradient(45deg, rgba(143, 189, 153, 0.12) 0px, rgba(143, 189, 153, 0.12) 1.5px, transparent 1.5px, transparent 15px),
+      repeating-linear-gradient(-45deg, rgba(143, 189, 153, 0.12) 0px, rgba(143, 189, 153, 0.12) 1.5px, transparent 1.5px, transparent 15px);
   }
 }
 
