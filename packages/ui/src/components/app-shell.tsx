@@ -17,8 +17,8 @@ export interface AppShellProps {
  */
 export function AppShell({ appName, nav, children, className }: AppShellProps) {
   return (
-    <div className="pattern-corak min-h-screen bg-white text-stone-900 dark:bg-stone-900 dark:text-stone-100">
-      <header className="sticky top-0 z-10 border-b border-brand-100 bg-white/90 backdrop-blur dark:border-brand-900/40 dark:bg-stone-900/90">
+    <div className="pattern-corak min-h-screen bg-brand-50 text-stone-900 dark:bg-brand-950 dark:text-stone-100">
+      <header className="sticky top-0 z-10 border-b border-brand-200 bg-white/80 backdrop-blur dark:border-brand-800/50 dark:bg-brand-950/80">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3 sm:px-6">
           <div className="flex items-baseline gap-2.5">
             <span className="text-lg font-bold tracking-tight text-brand-700 dark:text-brand-400">
