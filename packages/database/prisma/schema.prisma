@@ -613,6 +613,20 @@ model AuditEvent {
   @@map("audit_events")
 }
 
+/// Links a WhatsApp phone number to a real Anggota/Koperasi so the WA bot's
+/// handleMessage() can gate access -- matches plan.md §13.2 ("cek status
+/// anggota") and the reference wa-voice-bot-template's `users` registration
+/// table, but points at real seeded members instead of a placeholder schema.
+model WaRegistration {
+  id          String   @id @default(cuid())
+  phone       String   @unique
+  anggotaRef  String?  @map("anggota_ref")
+  koperasiRef String?  @map("koperasi_ref")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("wa_registrations")
+}
+
 // ============================================================================
 // FUTURE / TRADE FLOW — schema only, NOT seeded this pass (Fase 3+/4+)
 // plan.md §25 English-named entities with zero CSV data overlap.
@@ -636,15 +650,36 @@ model Facility {
 
 model Commodity {
   id          String   @id @default(cuid())
-  name        String
+  name        String   @unique
   defaultUnit String?  @map("default_unit")
   createdAt   DateTime @default(now()) @map("created_at")
 
   qualitySchemas CommodityQualitySchema[]
   supplyLots     SupplyLot[]
   rfqs           RFQ[]
+  priceCache     PriceCache[]
 
   @@map("commodities")
+}
+
+/// Price reference cache populated from BPS webapi.bps.go.id (plan.md §18).
+/// This is the "harga" data source the WhatsApp AI layer's cek_harga intent
+/// reads via apps/api's GET /harga/:komoditas -- the AI layer never queries
+/// this table (or any table) directly, per plan.md §16.4 rule 1.
+model PriceCache {
+  id           String    @id @default(cuid())
+  commodityId  String    @map("commodity_id")
+  commodity    Commodity @relation(fields: [commodityId], references: [id])
+  region       String? // BPS domain code / region label, null = national
+  hargaMin     Decimal   @map("harga_min") @db.Decimal(18, 2)
+  hargaMedian  Decimal   @map("harga_median") @db.Decimal(18, 2)
+  hargaMax     Decimal   @map("harga_max") @db.Decimal(18, 2)
+  unit         String    @default("kg")
+  sumber       String    @default("BPS")
+  fetchedAt    DateTime  @default(now()) @map("fetched_at")
+
+  @@index([commodityId, region])
+  @@map("price_cache")
 }
 
 model CommodityQualitySchema {

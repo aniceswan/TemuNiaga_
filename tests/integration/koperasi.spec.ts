@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 // Requires apps/api running against the seeded database:
 //   pnpm --filter @temuniaga/api run dev
-const API_BASE_URL = process.env.API_BASE_URL ?? "http://localhost:3001";
+const API_BASE_URL = process.env.API_BASE_URL ?? "http://localhost:3501";
 
 test("GET /koperasi returns the real seeded koperasi count", async () => {
   const res = await fetch(`${API_BASE_URL}/koperasi?pageSize=1`);

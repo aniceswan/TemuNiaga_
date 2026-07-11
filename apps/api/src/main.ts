@@ -9,7 +9,7 @@ async function bootstrap(): Promise<void> {
   app.enableCors();
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
-  const port = process.env.PORT ? Number(process.env.PORT) : 3001;
+  const port = process.env.PORT ? Number(process.env.PORT) : 3501;
   await app.listen(port);
   console.log(`TemuNiaga API listening on http://localhost:${port}`);
 }

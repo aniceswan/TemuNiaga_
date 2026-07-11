@@ -7,10 +7,26 @@ import { KoperasiModule } from "./koperasi/koperasi.module";
 import { AnggotaModule } from "./anggota/anggota.module";
 import { AuditModule } from "./audit/audit.module";
 import { HealthModule } from "./health/health.module";
+import { HargaModule } from "./harga/harga.module";
+import { PasokanModule } from "./pasokan/pasokan.module";
+import { SimpananModule } from "./simpanan/simpanan.module";
+import { WaModule } from "./wa/wa.module";
 import { AuditInterceptor } from "./audit/audit.interceptor";
 
 @Module({
-  imports: [PrismaModule, AuthModule, RbacModule, KoperasiModule, AnggotaModule, AuditModule, HealthModule],
+  imports: [
+    PrismaModule,
+    AuthModule,
+    RbacModule,
+    KoperasiModule,
+    AnggotaModule,
+    AuditModule,
+    HealthModule,
+    HargaModule,
+    PasokanModule,
+    SimpananModule,
+    WaModule,
+  ],
   providers: [{ provide: APP_INTERCEPTOR, useClass: AuditInterceptor }],
 })
 export class AppModule {}

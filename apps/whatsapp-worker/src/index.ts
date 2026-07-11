@@ -1,26 +1,39 @@
+import "dotenv/config";
 import { createServer } from "node:http";
-import { StubAdapter } from "./adapter";
-
-const PORT = process.env.PORT ? Number(process.env.PORT) : 4001;
-const adapter = new StubAdapter();
+import { config } from "./config";
+import { startBot, getConnectionStatus } from "./wa-bot";
 
 async function main(): Promise<void> {
-  console.log(`TemuNiaga WhatsApp Worker — adapter: ${adapter.name}`);
-  await adapter.connect();
-
   const server = createServer((req, res) => {
     if (req.url === "/healthz") {
       res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ status: "ok", service: "whatsapp-worker", adapter: adapter.name }));
+      res.end(
+        JSON.stringify({
+          status: "ok",
+          service: "whatsapp-worker",
+          waConnection: getConnectionStatus(),
+          aiEnabled: config.aiEnabled,
+        }),
+      );
       return;
     }
     res.writeHead(404, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: "not found" }));
   });
 
-  server.listen(PORT, () => {
-    console.log(`TemuNiaga WhatsApp Worker healthz on http://localhost:${PORT}/healthz`);
+  server.listen(config.port, () => {
+    console.log(`TemuNiaga WhatsApp Worker healthz on http://localhost:${config.port}/healthz`);
   });
+
+  if (process.env.WA_ENABLED === "true") {
+    console.log("TemuNiaga WhatsApp Worker starting Baileys connection...");
+    await startBot();
+  } else {
+    console.log("WA_ENABLED is not 'true' -- skipping Baileys connection (healthz still serves).");
+  }
 }
 
-main();
+main().catch((err) => {
+  console.error("Fatal:", err);
+  process.exit(1);
+});

@@ -17,3 +17,6 @@ coverage/
 .devdata/
 tests/test-results/
 playwright-report/
+wa-auth/
+# Reference-only material provided by the user, not part of this repo:
+/wa-voice-bot-template/
