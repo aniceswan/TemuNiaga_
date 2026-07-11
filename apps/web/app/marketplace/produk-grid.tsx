@@ -11,53 +11,9 @@ function formatRupiah(value: number): string {
   );
 }
 
-const PRODUCT_EMOJI: [RegExp, string][] = [
-  [/minyak|goreng|cooking.?oil/i, "🫒"],
-  [/beras|padi|gabah/i, "🍚"],
-  [/kopi|coffee/i, "☕"],
-  [/teh|tea/i, "🍵"],
-  [/gula|sugar/i, "🍬"],
-  [/susu|milk/i, "🥛"],
-  [/telur|egg/i, "🥚"],
-  [/ikan|fish|lele|nila|gurame/i, "🐟"],
-  [/ayam|chicken|broiler/i, "🐔"],
-  [/daging|sapi|kambing|meat/i, "🥩"],
-  [/sayur|bayam|kangkung|sawi|kol|kubis/i, "🥬"],
-  [/buah|pisang|mangga|jeruk|apel|pepaya/i, "🍎"],
-  [/cabai|cabe|chili/i, "🌶️"],
-  [/bawang|onion|garlic/i, "🧅"],
-  [/kelapa|santan/i, "🥥"],
-  [/jahe|kunyit|kencur|temu/i, "🫚"],
-  [/tempe|tahu|kedelai/i, "🫘"],
-  [/garam|salt/i, "🧂"],
-  [/madu|honey/i, "🍯"],
-  [/roti|kue|bread|cake/i, "🍞"],
-  [/coklat|cokelat|chocolate/i, "🍫"],
-  [/sabun|soap/i, "🧼"],
-  [/pupuk|kompos/i, "🪴"],
-  [/pakan/i, "🌾"],
-];
-
-function productEmoji(nama: string): string {
-  for (const [re, emoji] of PRODUCT_EMOJI) {
-    if (re.test(nama)) return emoji;
-  }
-  return "📦";
-}
-
-const BG_COLORS = ["#2563eb", "#7c3aed", "#db2777", "#ea580c", "#16a34a", "#0891b2", "#4f46e5", "#b91c1c"];
-
-function productPlaceholderUrl(nama: string): string {
-  const label = (nama || "Produk").slice(0, 18);
-  const emoji = productEmoji(label);
-  const colorIdx = [...label].reduce((s, c) => s + c.charCodeAt(0), 0) % BG_COLORS.length;
-  const bg = BG_COLORS[colorIdx];
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
-  <rect width="400" height="400" fill="${bg}"/>
-  <text x="200" y="200" text-anchor="middle" dy="-0.3em" font-size="80" fill="white" opacity="0.9">${emoji}</text>
-  <text x="200" y="280" text-anchor="middle" font-size="22" fill="white" opacity="0.85" font-family="system-ui,sans-serif" font-weight="600">${label}</text>
-</svg>`;
-  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+function productImageUrl(nama: string, id: string): string {
+  const keyword = encodeURIComponent((nama || "produk").replace(/\s+/g, ","));
+  return `https://loremflickr.com/400/400/${keyword}?random=${encodeURIComponent(id)}`;
 }
 
 export function ProdukGrid({ items }: { items: ProdukSummary[] }) {
@@ -91,7 +47,7 @@ export function ProdukGrid({ items }: { items: ProdukSummary[] }) {
           <div className="aspect-square overflow-hidden bg-stone-100 dark:bg-brand-950/40">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={productPlaceholderUrl(item.namaProduk ?? "Produk")}
+              src={productImageUrl(item.namaProduk ?? "Produk", item.produkSampleId)}
               alt={item.namaProduk ?? "Produk"}
               loading="lazy"
               className="h-full w-full object-cover"

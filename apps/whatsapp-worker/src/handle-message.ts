@@ -26,9 +26,6 @@ export interface HandleMessageResult {
 export async function handleMessage(phone: string, rawText: string): Promise<HandleMessageResult> {
   const text = rawText.slice(0, 1000);
   const registration = await lookupRegistration(phone);
-  if (!registration) {
-    return { intent: "unregistered", reply: "Nomor Anda belum terdaftar. Hubungi operator Kopdes untuk pendaftaran." };
-  }
 
   const intent = detectIntent(text);
   let reply: string;
@@ -51,16 +48,16 @@ export async function handleMessage(phone: string, rawText: string): Promise<Han
       break;
     }
     case "lapor_pasokan": {
+      if (!registration?.koperasiRef) {
+        reply = "Untuk lapor pasokan, daftarkan nomor Anda dulu melalui operator Kopdes. Akses menu registrasi di dashboard web.";
+        break;
+      }
       const match = /(\d+(?:[.,]\d+)?)\s*(?:kg|kilo)?/i.exec(text);
       const kg = match?.[1] ? Number(match[1].replace(",", ".")) : NaN;
       const komoditasMatch = /lapor\s+([a-z ]+?)\s*\d/i.exec(text) ?? /lapor\s+([a-z ]+)/i.exec(text);
       const komoditas = komoditasMatch?.[1]?.trim();
       if (!kg || kg <= 0 || kg > 100_000 || !komoditas) {
         reply = "Format: LAPOR [komoditas] [kg], contoh: LAPOR kopi 200";
-        break;
-      }
-      if (!registration.koperasiRef) {
-        reply = "Akun Anda belum terhubung ke koperasi. Hubungi operator untuk melengkapi pendaftaran.";
         break;
       }
       const result = await laporPasokan({
@@ -76,8 +73,8 @@ export async function handleMessage(phone: string, rawText: string): Promise<Han
       break;
     }
     case "status_bayar": {
-      if (!registration.anggotaRef) {
-        reply = "Data keanggotaan untuk nomor ini belum terhubung. Hubungi operator Kopdes.";
+      if (!registration?.anggotaRef) {
+        reply = "Untuk cek status pembayaran, daftarkan nomor Anda dulu melalui operator Kopdes. Akses menu registrasi di dashboard web.";
         break;
       }
       const status = await getSimpananStatus(registration.anggotaRef);
