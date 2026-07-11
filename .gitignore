@@ -1,0 +1,25 @@
+node_modules/
+.pnpm-store/
+dist/
+.next/
+.turbo/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+coverage/
+*.log
+.~lock.*#
+.devdata/
+tests/test-results/
+playwright-report/
+wa-auth/
+# Reference-only material provided by the user, not part of this repo:
+/wa-voice-bot-template/
+# Separate git repo (its own remote) nested here as a deploy target -- not
+# part of building_bro's history, see the "Temu_Niaga deploy repo" note.
+/Temu_Niaga/

@@ -1,0 +1,19 @@
+{
+  "name": "@temuniaga/tests",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test:integration": "node --import tsx --test integration/*.spec.ts",
+    "test:e2e": "playwright test end-to-end",
+    "typecheck": "tsc --noEmit",
+    "build": "echo 'no build step for tests package'",
+    "lint": "echo 'no lint configured for tests package'",
+    "test": "echo 'run test:integration or test:e2e directly against a running dev stack'"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0",
+    "@types/node": "^20.14.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}

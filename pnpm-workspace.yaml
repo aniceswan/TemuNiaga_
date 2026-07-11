@@ -1,0 +1,14 @@
+packages:
+  - apps/*
+  - packages/*
+  - tests
+
+onlyBuiltDependencies:
+  - '@nestjs/core'
+  - '@prisma/client'
+  - '@prisma/engines'
+  - '@whiskeysockets/baileys'
+  - esbuild
+  - ffmpeg-static
+  - prisma
+  - protobufjs

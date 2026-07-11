@@ -1,0 +1,20 @@
+version: "3.9"
+
+# Fase 8 scale-out (plan.md §5.4): OpenTelemetry, Prometheus, Grafana.
+# Not wired up in this scaffold -- no metrics are emitted yet by any app.
+# Stub kept here so the target shape is documented before it's needed.
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3030:3000" # host 3001 is reserved for apps/api in local dev
+    depends_on:
+      - prometheus

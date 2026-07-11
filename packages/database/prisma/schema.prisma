@@ -1,0 +1,1075 @@
+// TemuNiaga — packages/database/prisma/schema.prisma
+//
+// Naming convention: Indonesian, CSV-accurate model names for every entity that
+// has real ground-truth data in db_export/ (see docs/architecture/README.md).
+// English names from plan.md §25 are reserved for the aspirational B2B trade-flow
+// entities that have zero CSV overlap — those are modeled below but NOT seeded
+// this pass (see "FUTURE / TRADE FLOW" section).
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ============================================================================
+// REFERENCE / MASTER DATA (no dependencies)
+// ============================================================================
+
+/// referensi_wilayah.csv — canonical region code registry
+model Wilayah {
+  kodeWilayah    String   @id @map("kode_wilayah")
+  provinsi       String?
+  kabKota        String?  @map("kab_kota")
+  kecamatan      String?
+  desaKelurahan  String?  @map("desa_kelurahan")
+  dibuatPada     DateTime @map("dibuat_pada")
+  diperbaruiPada DateTime @map("diperbarui_pada")
+
+  profilDesa       ProfilDesa?
+  komoditasDesa    KomoditasDesa[]
+  koperasiWilayah  KoperasiWilayah[]
+  anggota          Anggota[]
+
+  @@map("referensi_wilayah")
+}
+
+/// referensi_profil_desa.csv — 1:1 with Wilayah
+model ProfilDesa {
+  kodeWilayah       String   @id @map("kode_wilayah")
+  wilayah           Wilayah  @relation(fields: [kodeWilayah], references: [kodeWilayah])
+  tahunPopulasi     Int?     @map("tahun_populasi")
+  totalPenduduk     Int?     @map("total_penduduk")
+  pendudukLakiLaki  Int?     @map("penduduk_laki_laki")
+  pendudukPerempuan Int?     @map("penduduk_perempuan")
+  tahunPendanaan    Int?     @map("tahun_pendanaan")
+  anggaranDanaDesa  Decimal? @map("anggaran_dana_desa") @db.Decimal(18, 2)
+  dibuatPada        DateTime @map("dibuat_pada")
+  diperbaruiPada    DateTime @map("diperbarui_pada")
+
+  @@map("referensi_profil_desa")
+}
+
+/// referensi_komoditas_desa.csv — many rows per Wilayah
+model KomoditasDesa {
+  komoditasRef        String   @id @map("komoditas_ref")
+  kodeWilayah         String   @map("kode_wilayah")
+  wilayah             Wilayah  @relation(fields: [kodeWilayah], references: [kodeWilayah])
+  namaKomoditas       String?  @map("nama_komoditas")
+  luasArea            String?  @map("luas_area")
+  volume              String?
+  jumlahSdmTerlibat   Int?     @map("jumlah_sdm_terlibat")
+  nilaiPotensiDesa     Decimal? @map("nilai_potensi_desa") @db.Decimal(18, 2)
+  dibuatPada          DateTime @map("dibuat_pada")
+  diperbaruiPada      DateTime @map("diperbarui_pada")
+
+  @@index([kodeWilayah])
+  @@map("referensi_komoditas_desa")
+}
+
+/// referensi_dokumen_koperasi.csv
+model JenisDokumen {
+  jenisDokumenRef String     @id @map("jenis_dokumen_ref")
+  namaDokumen     String?    @map("nama_dokumen")
+  dibuatPada      DateTime   @map("dibuat_pada")
+  diperbaruiPada  DateTime   @map("diperbarui_pada")
+
+  dokumen Dokumen[]
+
+  @@map("referensi_dokumen_koperasi")
+}
+
+/// referensi_gerai_koperasi.csv
+model JenisGerai {
+  jenisGeraiRef  String   @id @map("jenis_gerai_ref")
+  namaJenisGerai String?  @map("nama_jenis_gerai")
+  dibuatPada     DateTime @map("dibuat_pada")
+  diperbaruiPada DateTime @map("diperbarui_pada")
+
+  gerai Gerai[]
+
+  @@map("referensi_gerai_koperasi")
+}
+
+// ============================================================================
+// KOPERASI CORE
+// ============================================================================
+
+/// profil_koperasi.csv — ground truth for plan.md §25 "Cooperative"
+model Koperasi {
+  koperasiRef         String    @id @map("koperasi_ref")
+  namaKoperasi        String    @map("nama_koperasi")
+  statusRegistrasi    String?   @map("status_registrasi")
+  bentukKoperasi      String?   @map("bentuk_koperasi")
+  kategoriUsaha       String?   @map("kategori_usaha")
+  nikKoperasi         String?   @map("nik_koperasi") // masked sample data
+  alamatLengkap       String?   @map("alamat_lengkap")
+  kodePos             String?   @map("kode_pos")
+  koordinatDibulatkan String?   @map("koordinat_dibulatkan")
+  modalAwal           Decimal?  @map("modal_awal") @db.Decimal(18, 2)
+  sumberPersetujuan   String?   @map("sumber_persetujuan")
+  tentangKoperasi     String?   @map("tentang_koperasi")
+  polaPengelolaan     String?   @map("pola_pengelolaan")
+  metodePengisian     String?   @map("metode_pengisian")
+  dibuatPada          DateTime  @map("dibuat_pada")
+  diperbaruiPada      DateTime  @map("diperbarui_pada")
+
+  wilayah          KoperasiWilayah?
+  anggota          Anggota[]
+  pengurus         Pengurus[]
+  karyawan         Karyawan[]
+  aset             Aset[]
+  gerai            Gerai[]
+  dokumen          Dokumen[]
+  modal            Modal[]
+  akunBank         AkunBank[]
+  kbli             Kbli[]
+  pengajuanDomain  PengajuanDomain[]
+  pengajuanKemitraan  PengajuanKemitraan[]
+  pengajuanPembiayaan PengajuanPembiayaan[]
+  pengajuanRekeningBank PengajuanRekeningBank[]
+  produk           Produk[]
+  inventaris       Inventaris[]
+  barangMasuk      BarangMasuk[]
+  barangKeluar     BarangKeluar[]
+  transaksi        TransaksiPenjualan[]
+  simpanan         Simpanan[]
+  rat              Rat[]
+
+  @@map("profil_koperasi")
+}
+
+/// referensi_koperasi_wilayah.csv — 1:1 with Koperasi
+model KoperasiWilayah {
+  koperasiRef    String   @id @map("koperasi_ref")
+  koperasi       Koperasi @relation(fields: [koperasiRef], references: [koperasiRef])
+  kodeWilayah    String   @map("kode_wilayah")
+  wilayah        Wilayah  @relation(fields: [kodeWilayah], references: [kodeWilayah])
+  dibuatPada     DateTime @map("dibuat_pada")
+  diperbaruiPada DateTime @map("diperbarui_pada")
+
+  @@index([kodeWilayah])
+  @@map("referensi_koperasi_wilayah")
+}
+
+/// anggota_koperasi.csv — ground truth for plan.md §25 "Member" (74,270 rows)
+model Anggota {
+  anggotaRef        String    @id @map("anggota_ref")
+  koperasiRef       String    @map("koperasi_ref")
+  koperasi          Koperasi  @relation(fields: [koperasiRef], references: [koperasiRef])
+  nama              String?
+  nik               String?   // masked sample data
+  kodeWilayah       String?   @map("kode_wilayah")
+  wilayah           Wilayah?  @relation(fields: [kodeWilayah], references: [kodeWilayah])
+  jenisKelamin      String?   @map("jenis_kelamin")
+  statusKeanggotaan String?   @map("status_keanggotaan")
+  tanggalTerdaftar  DateTime? @map("tanggal_terdaftar")
+  fileKtp           String?   @map("file_ktp")
+  statusAkun        String?   @map("status_akun")
+  pekerjaan         String?
+  dibuatPada        DateTime  @map("dibuat_pada")
+  diperbaruiPada    DateTime  @map("diperbarui_pada")
+
+  simpanan Simpanan[]
+
+  @@index([koperasiRef])
+  @@index([kodeWilayah])
+  @@index([statusKeanggotaan])
+  @@map("anggota_koperasi")
+}
+
+/// pengurus_koperasi.csv — note: tanggalLahir kept as String (masked "1973-**-**" values)
+model Pengurus {
+  pengurusRef       String    @id @map("pengurus_ref")
+  koperasiRef       String    @map("koperasi_ref")
+  koperasi          Koperasi  @relation(fields: [koperasiRef], references: [koperasiRef])
+  nama              String?
+  jabatan           String?
+  status            String?
+  noHp              String?   @map("no_hp")
+  nik               String?   // masked sample data
+  jenisKelamin      String?   @map("jenis_kelamin")
+  fotoProfil        String?   @map("foto_profil")
+  email             String?
+  alamat            String?
+  kodePos           String?   @map("kode_pos") // masked digits, kept as String
+  tanggalLahir      String?   @map("tanggal_lahir") // masked "1973-**-**" — not a valid DateTime
+  statusPendidikan  String?   @map("status_pendidikan")
+  periodeMulai      DateTime? @map("periode_mulai")
+  periodeSelesai    DateTime? @map("periode_selesai")
+  fileKtp           String?   @map("file_ktp")
+  sumberData        String?   @map("sumber_data")
+  dibuatPada        DateTime  @map("dibuat_pada")
+  diperbaruiPada    DateTime  @map("diperbarui_pada")
+
+  @@index([koperasiRef])
+  @@map("pengurus_koperasi")
+}
+
+model Karyawan {
+  karyawanRef      String   @id @map("karyawan_ref")
+  koperasiRef      String   @map("koperasi_ref")
+  koperasi         Koperasi @relation(fields: [koperasiRef], references: [koperasiRef])
+  nama             String?
+  jabatan          String?
+  nomorHpKaryawan  String?  @map("nomor_hp_karyawan")
+  jenisKelamin     String?  @map("jenis_kelamin")
+  nik              String?  // masked sample data
+  email            String?
+  statusKaryawan   String?  @map("status_karyawan")
+  dibuatPada       DateTime @map("dibuat_pada")
+  diperbaruiPada   DateTime @map("diperbarui_pada")
+
+  @@index([koperasiRef])
+  @@map("karyawan_koperasi")
+}
+
+model Aset {
+  asetRef                    String   @id @map("aset_ref")
+  koperasiRef                String   @map("koperasi_ref")
+  koperasi                   Koperasi @relation(fields: [koperasiRef], references: [koperasiRef])
+  namaAset                   String?  @map("nama_aset")
+  tipeAset                   String?  @map("tipe_aset")
+  status                     String?
+  progresPembangunan         Float?   @map("progres_pembangunan")
+  fotoUtama                  String?  @map("foto_utama")
+  fotoSekunder               String?  @map("foto_sekunder")
+  dokumenUtama               String?  @map("dokumen_utama")
+  dokumenSekunder            String?  @map("dokumen_sekunder")
+  dokumenLainnya             String?  @map("dokumen_lainnya")
+  luasLahan                  Decimal? @map("luas_lahan") @db.Decimal(18, 2)
+  panjangLahan               Decimal? @map("panjang_lahan") @db.Decimal(18, 2)
+  lebarLahan                 Decimal? @map("lebar_lahan") @db.Decimal(18, 2)
+  aksesJalan                 String?  @map("akses_jalan")
+  koordinatDibulatkan        String?  @map("koordinat_dibulatkan")
+  dibuatPada                 DateTime @map("dibuat_pada")
+  diperbaruiPada             DateTime? @map("diperbarui_pada") // blank in ~48% of source rows
+
+  @@index([koperasiRef])
+  @@map("aset_koperasi")
+}
+
+model Gerai {
+  geraiRef                       String     @id @map("gerai_ref")
+  koperasiRef                    String     @map("koperasi_ref")
+  koperasi                       Koperasi   @relation(fields: [koperasiRef], references: [koperasiRef])
+  jenisGeraiRef                  String?    @map("jenis_gerai_ref")
+  jenisGerai                     JenisGerai? @relation(fields: [jenisGeraiRef], references: [jenisGeraiRef])
+  statusGerai                    String?    @map("status_gerai")
+  fotoGerai                      String?    @map("foto_gerai")
+  pengisi                        String?
+  aksesInternet                  String?    @map("akses_internet")
+  aksesListrik                   String?    @map("akses_listrik")
+  statusKepemilikanAsetGerai     String?    @map("status_kepemilikan_aset_gerai")
+  statusPemanfaatanAsetGerai     String?    @map("status_pemanfaatan_aset_gerai")
+  sumberAirBersih                String?    @map("sumber_air_bersih")
+  jenisBangunan                  String?    @map("jenis_bangunan")
+  koordinatDibulatkan            String?    @map("koordinat_dibulatkan")
+  dibuatPada                     DateTime   @map("dibuat_pada")
+  diperbaruiPada                 DateTime   @map("diperbarui_pada")
+
+  @@index([koperasiRef])
+  @@index([jenisGeraiRef])
+  @@map("gerai_koperasi")
+}
+
+model Dokumen {
+  dokumenRef          String       @id @map("dokumen_ref")
+  koperasiRef         String       @map("koperasi_ref")
+  koperasi            Koperasi     @relation(fields: [koperasiRef], references: [koperasiRef])
+  jenisDokumenRef     String?      @map("jenis_dokumen_ref")
+  jenisDokumen        JenisDokumen? @relation(fields: [jenisDokumenRef], references: [jenisDokumenRef])
+  nomor               String?
+  tanggalBerlaku      DateTime?    @map("tanggal_berlaku")
+  tanggalKadaluarsa   DateTime?    @map("tanggal_kadaluarsa")
+  alamatPadaDokumen   String?      @map("alamat_pada_dokumen")
+  unggahanDokumen     String?      @map("unggahan_dokumen")
+  dibuatPada          DateTime     @map("dibuat_pada")
+  diperbaruiPada      DateTime     @map("diperbarui_pada")
+
+  @@index([koperasiRef])
+  @@index([jenisDokumenRef])
+  @@map("dokumen_koperasi")
+}
+
+model Modal {
+  modalRef        String    @id @map("modal_ref")
+  koperasiRef     String    @map("koperasi_ref")
+  koperasi        Koperasi  @relation(fields: [koperasiRef], references: [koperasiRef])
+  nomorPerjanjian String?   @map("nomor_perjanjian")
+  tipeSumber      String?   @map("tipe_sumber")
+  namaSumber      String?   @map("nama_sumber")
+  tipeModal       String?   @map("tipe_modal")
+  jumlah          Decimal?  @db.Decimal(18, 2)
+  tanggalDiterima DateTime? @map("tanggal_diterima")
+  filePerjanjian  String?   @map("file_perjanjian")
+  dibuatPada      DateTime  @map("dibuat_pada")
+  diperbaruiPada  DateTime  @map("diperbarui_pada")
+
+  @@index([koperasiRef])
+  @@map("modal_koperasi")
+}
+
+model AkunBank {
+  akunBankRef    String   @id @map("akun_bank_ref")
+  koperasiRef    String   @map("koperasi_ref")
+  koperasi       Koperasi @relation(fields: [koperasiRef], references: [koperasiRef])
+  namaRekening   String?  @map("nama_rekening")
+  namaBank       String?  @map("nama_bank")
+  dibuatPada     DateTime @map("dibuat_pada")
+  diperbaruiPada DateTime @map("diperbarui_pada")
+
+  @@index([koperasiRef])
+  @@map("akun_bank_koperasi")
+}
+
+/// kbli_koperasi.csv — spreadsheet __row_id only, no stable business key
+model Kbli {
+  id             Int      @id @default(autoincrement())
+  sourceRowId    Int?     @map("source_row_id")
+  koperasiRef    String   @map("koperasi_ref")
+  koperasi       Koperasi @relation(fields: [koperasiRef], references: [koperasiRef])
+  kodeKbli       String?  @map("kode_kbli")
+  namaKbli       String?  @map("nama_kbli")
+  tipeIzinUsaha  String?  @map("tipe_izin_usaha")
+  tahunKbli      Int?     @map("tahun_kbli")
+  dibuatPada     DateTime @map("dibuat_pada")
+  diperbaruiPada DateTime @map("diperbarui_pada")
+
+  @@index([koperasiRef])
+  @@map("kbli_koperasi")
+}
+
+model PengajuanDomain {
+  domainRef         String   @id @map("domain_ref")
+  koperasiRef       String   @map("koperasi_ref")
+  koperasi          Koperasi @relation(fields: [koperasiRef], references: [koperasiRef])
+  domainKoperasi    String?  @map("domain_koperasi")
+  statusVerifikasi  String?  @map("status_verifikasi")
+  statusDomain      String?  @map("status_domain")
+  dibuatPada        DateTime @map("dibuat_pada")
+  diperbaruiPada    DateTime @map("diperbarui_pada")
+
+  @@index([koperasiRef])
+  @@map("pengajuan_domain")
+}
+
+model PengajuanKemitraan {
+  pengajuanKemitraanRef  String   @id @map("pengajuan_kemitraan_ref")
+  koperasiRef            String   @map("koperasi_ref")
+  koperasi               Koperasi @relation(fields: [koperasiRef], references: [koperasiRef])
+  nik                    String?  // masked sample data
+  penanggungJawab        String?  @map("penanggung_jawab")
+  nomorPenanggungJawab   String?  @map("nomor_penanggung_jawab")
+  statusPermohonan       String?  @map("status_permohonan")
+  bisnisKemitraan        String?  @map("bisnis_kemitraan")
+  paketKemitraan         String?  @map("paket_kemitraan")
+  formulirPermohonan     String?  @map("formulir_permohonan")
+  ktpPenanggungJawab     String?  @map("ktp_penanggung_jawab")
+  tipeKemitraan          String?  @map("tipe_kemitraan")
+  catatan                String?
+  dibuatPada             DateTime @map("dibuat_pada")
+  diperbaruiPada         DateTime @map("diperbarui_pada")
+
+  @@index([koperasiRef])
+  @@map("pengajuan_kemitraan")
+}
+
+model PengajuanPembiayaan {
+  pengajuanPembiayaanRef       String   @id @map("pengajuan_pembiayaan_ref")
+  koperasiRef                  String   @map("koperasi_ref")
+  koperasi                     Koperasi @relation(fields: [koperasiRef], references: [koperasiRef])
+  nik                          String?  // masked sample data
+  penanggungJawab              String?  @map("penanggung_jawab")
+  nomorPenanggungJawab         String?  @map("nomor_penanggung_jawab")
+  statusPermohonan             String?  @map("status_permohonan")
+  formulirPermohonanPembiayaan String?  @map("formulir_permohonan_pembiayaan")
+  nominalPermohonan            Decimal? @map("nominal_permohonan") @db.Decimal(18, 2) // source has scientific notation e.g. "3e+09"
+  tenor                        Int?
+  tujuanPermohonan             String?  @map("tujuan_permohonan")
+  dibuatPada                   DateTime @map("dibuat_pada")
+  diperbaruiPada               DateTime @map("diperbarui_pada")
+
+  @@index([koperasiRef])
+  @@map("pengajuan_pembiayaan")
+}
+
+model PengajuanRekeningBank {
+  pengajuanRekeningRef  String   @id @map("pengajuan_rekening_ref")
+  koperasiRef           String   @map("koperasi_ref")
+  koperasi              Koperasi @relation(fields: [koperasiRef], references: [koperasiRef])
+  nik                   String?  // masked sample data
+  penanggungJawab       String?  @map("penanggung_jawab")
+  nomorPenanggungJawab  String?  @map("nomor_penanggung_jawab")
+  status                String?
+  kodeBank              String?  @map("kode_bank")
+  namaBank              String?  @map("nama_bank")
+  dibuatPada            DateTime @map("dibuat_pada")
+  diperbaruiPada        DateTime @map("diperbarui_pada")
+
+  @@index([koperasiRef])
+  @@map("pengajuan_rekening_bank")
+}
+
+// ============================================================================
+// PRODUCT / INVENTORY / SALES
+// ============================================================================
+
+model Produk {
+  produkSampleId String   @id @map("produk_sample_id")
+  koperasiRef    String   @map("koperasi_ref")
+  koperasi       Koperasi @relation(fields: [koperasiRef], references: [koperasiRef])
+  kodeBarcode    String?  @map("kode_barcode")
+  namaProduk     String?  @map("nama_produk")
+  unit           String?
+  dibuatPada     DateTime @map("dibuat_pada")
+  diperbaruiPada DateTime @map("diperbarui_pada")
+
+  inventaris   Inventaris[]
+  barangMasuk  BarangMasuk[]
+  barangKeluar BarangKeluar[]
+
+  @@index([koperasiRef])
+  @@index([kodeBarcode])
+  @@map("produk_koperasi")
+}
+
+model Inventaris {
+  inventarisRef  String   @id @map("inventaris_ref")
+  produkSampleId String   @map("produk_sample_id")
+  produk         Produk   @relation(fields: [produkSampleId], references: [produkSampleId])
+  koperasiRef    String   @map("koperasi_ref")
+  koperasi       Koperasi @relation(fields: [koperasiRef], references: [koperasiRef])
+  namaProduk     String?  @map("nama_produk")
+  stok           Int?
+  kodeBarcode    String?  @map("kode_barcode")
+  dibuatPada     DateTime @map("dibuat_pada")
+  diperbaruiPada DateTime @map("diperbarui_pada")
+
+  @@index([koperasiRef])
+  @@index([produkSampleId])
+  @@map("inventaris_produk")
+}
+
+model BarangMasuk {
+  barangMasukRef String    @id @map("barang_masuk_ref")
+  produkSampleId String    @map("produk_sample_id")
+  produk         Produk    @relation(fields: [produkSampleId], references: [produkSampleId])
+  koperasiRef    String    @map("koperasi_ref")
+  koperasi       Koperasi  @relation(fields: [koperasiRef], references: [koperasiRef])
+  kodeBarcode    String?   @map("kode_barcode")
+  namaProduk     String?   @map("nama_produk")
+  namaTampilan   String?   @map("nama_tampilan")
+  jumlahMasuk    Int?      @map("jumlah_masuk")
+  jumlahTersedia Int?      @map("jumlah_tersedia")
+  hargaBeli      Decimal?  @map("harga_beli") @db.Decimal(18, 2)
+  hargaJual      Decimal?  @map("harga_jual") @db.Decimal(18, 2)
+  totalBiaya     Decimal?  @map("total_biaya") @db.Decimal(18, 2)
+  keterangan     String?
+  status         String?
+  tanggalMasuk   DateTime? @map("tanggal_masuk")
+  dibuatPada     DateTime  @map("dibuat_pada")
+  diperbaruiPada DateTime  @map("diperbarui_pada")
+
+  @@index([koperasiRef])
+  @@index([produkSampleId])
+  @@map("barang_masuk_produk")
+}
+
+model TransaksiPenjualan {
+  transaksiSampleId String   @id @map("transaksi_sample_id")
+  koperasiRef       String   @map("koperasi_ref")
+  koperasi          Koperasi @relation(fields: [koperasiRef], references: [koperasiRef])
+  namaPelanggan     String?  @map("nama_pelanggan")
+  tanggalDibuat     DateTime? @map("tanggal_dibuat")
+  totalPembayaran   Decimal? @map("total_pembayaran") @db.Decimal(18, 2)
+  statusTransaksi   String?  @map("status_transaksi")
+  metodePembayaran  String?  @map("metode_pembayaran")
+  dibuatPada        DateTime @map("dibuat_pada")
+  diperbaruiPada    DateTime @map("diperbarui_pada")
+
+  barangKeluar BarangKeluar[]
+
+  @@index([koperasiRef])
+  @@map("transaksi_penjualan")
+}
+
+/// barang_keluar_produk.csv — spreadsheet __row_id only, no stable business key
+model BarangKeluar {
+  id                Int      @id @default(autoincrement())
+  sourceRowId       Int?     @map("source_row_id")
+  transaksiSampleId String   @map("transaksi_sample_id")
+  transaksi         TransaksiPenjualan @relation(fields: [transaksiSampleId], references: [transaksiSampleId])
+  produkSampleId    String   @map("produk_sample_id")
+  produk            Produk   @relation(fields: [produkSampleId], references: [produkSampleId])
+  koperasiRef       String   @map("koperasi_ref")
+  koperasi          Koperasi @relation(fields: [koperasiRef], references: [koperasiRef])
+  kodeBarcode       String?  @map("kode_barcode")
+  tanggalKeluar     DateTime? @map("tanggal_keluar")
+  status            String?
+  namaProduk        String?  @map("nama_produk")
+  namaTampilan      String?  @map("nama_tampilan")
+  jumlahKeluar      Int?     @map("jumlah_keluar")
+  harga             Decimal? @db.Decimal(18, 2)
+  totalNilai        Decimal? @map("total_nilai") @db.Decimal(18, 2)
+  statusTransaksi   String?  @map("status_transaksi")
+  dibuatPada        DateTime @map("dibuat_pada")
+  diperbaruiPada    DateTime @map("diperbarui_pada")
+
+  @@index([koperasiRef])
+  @@index([produkSampleId])
+  @@index([transaksiSampleId])
+  @@map("barang_keluar_produk")
+}
+
+// ============================================================================
+// SAVINGS / RAT
+// ============================================================================
+
+/// simpanan_anggota.csv — ground truth for plan.md §25 "SavingsAccount" (largest table: 372,408 rows)
+model Simpanan {
+  simpananRef       String    @id @map("simpanan_ref")
+  koperasiRef       String    @map("koperasi_ref")
+  koperasi          Koperasi  @relation(fields: [koperasiRef], references: [koperasiRef])
+  anggotaRef        String    @map("anggota_ref")
+  anggota           Anggota   @relation(fields: [anggotaRef], references: [anggotaRef])
+  periodePembayaran String?   @map("periode_pembayaran")
+  jumlahSimpanan    Decimal?  @map("jumlah_simpanan") @db.Decimal(18, 2)
+  status            String?
+  dibuatPada        DateTime  @map("dibuat_pada")
+  dibayarPada       DateTime? @map("dibayar_pada")
+
+  @@index([koperasiRef])
+  @@index([anggotaRef])
+  @@index([status])
+  @@index([periodePembayaran])
+  @@map("simpanan_anggota")
+}
+
+/// rat_koperasi.csv — financial statement JSON blobs kept verbatim, not decomposed
+model Rat {
+  ratSampleId           String    @id @map("rat_sample_id")
+  koperasiRef           String    @map("koperasi_ref")
+  koperasi              Koperasi  @relation(fields: [koperasiRef], references: [koperasiRef])
+  jenisSektorKoperasi   String?   @map("jenis_sektor_koperasi")
+  urutanRat             Int?      @map("urutan_rat")
+  tahunBuku             Int?      @map("tahun_buku")
+  tahunRencanaKerja     Int?      @map("tahun_rencana_kerja")
+  tahunRencanaAnggaran  Int?      @map("tahun_rencana_anggaran")
+  tanggalRat            DateTime? @map("tanggal_rat")
+  jumlahPesertaRat      Int?      @map("jumlah_peserta_rat")
+  statusRat             String?   @map("status_rat")
+  tahapRat              Int?      @map("tahap_rat")
+  laporanPosisiKeuangan Json?     @map("laporan_posisi_keuangan")
+  laporanHasilUsaha     Json?     @map("laporan_hasil_usaha")
+  rapbPosisiKeuangan    Json?     @map("rapb_posisi_keuangan")
+  rapbHasilUsaha        Json?     @map("rapb_hasil_usaha")
+  dibuatPada            DateTime  @map("dibuat_pada")
+  diperbaruiPada        DateTime  @map("diperbarui_pada")
+
+  @@index([koperasiRef])
+  @@map("rat_koperasi")
+}
+
+// ============================================================================
+// PLATFORM (no CSV source — needed for Fase 1 auth/RBAC/audit)
+// ============================================================================
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN_PENDAMPING
+  PENGURUS_KOPERASI
+  OPERATOR_KOPERASI
+  BUYER
+  PUBLIC
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  name         String?
+  role         Role     @default(OPERATOR_KOPERASI)
+  koperasiRef  String?  @map("koperasi_ref") // scopes non-admin users to one koperasi
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model AuditEvent {
+  id          String   @id @default(cuid())
+  actorUserId String?  @map("actor_user_id")
+  action      String
+  entity      String
+  entityId    String?  @map("entity_id")
+  metadata    Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([entity, entityId])
+  @@map("audit_events")
+}
+
+/// Links a WhatsApp phone number to a real Anggota/Koperasi so the WA bot's
+/// handleMessage() can gate access -- matches plan.md §13.2 ("cek status
+/// anggota") and the reference wa-voice-bot-template's `users` registration
+/// table, but points at real seeded members instead of a placeholder schema.
+model WaRegistration {
+  id          String   @id @default(cuid())
+  phone       String   @unique
+  anggotaRef  String?  @map("anggota_ref")
+  koperasiRef String?  @map("koperasi_ref")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("wa_registrations")
+}
+
+// ============================================================================
+// FUTURE / TRADE FLOW — schema only, NOT seeded this pass (Fase 3+/4+)
+// plan.md §25 English-named entities with zero CSV data overlap.
+// ============================================================================
+
+model Facility {
+  id          String   @id @default(cuid())
+  koperasiRef String   @map("koperasi_ref")
+  name        String
+  type        String?
+  address     String?
+  capacity    Decimal? @db.Decimal(18, 2)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  inventoryLots InventoryLot[]
+
+  @@index([koperasiRef])
+  @@map("facilities")
+}
+
+model Commodity {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  defaultUnit String?  @map("default_unit")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  qualitySchemas CommodityQualitySchema[]
+  supplyLots     SupplyLot[]
+  rfqs           RFQ[]
+  priceCache     PriceCache[]
+
+  @@map("commodities")
+}
+
+/// Price reference cache populated from BPS webapi.bps.go.id (plan.md §18).
+/// This is the "harga" data source the WhatsApp AI layer's cek_harga intent
+/// reads via apps/api's GET /harga/:komoditas -- the AI layer never queries
+/// this table (or any table) directly, per plan.md §16.4 rule 1.
+model PriceCache {
+  id           String    @id @default(cuid())
+  commodityId  String    @map("commodity_id")
+  commodity    Commodity @relation(fields: [commodityId], references: [id])
+  region       String? // BPS domain code / region label, null = national
+  hargaMin     Decimal   @map("harga_min") @db.Decimal(18, 2)
+  hargaMedian  Decimal   @map("harga_median") @db.Decimal(18, 2)
+  hargaMax     Decimal   @map("harga_max") @db.Decimal(18, 2)
+  unit         String    @default("kg")
+  sumber       String    @default("BPS")
+  fetchedAt    DateTime  @default(now()) @map("fetched_at")
+
+  @@index([commodityId, region])
+  @@map("price_cache")
+}
+
+model CommodityQualitySchema {
+  id          String    @id @default(cuid())
+  commodityId String    @map("commodity_id")
+  commodity   Commodity @relation(fields: [commodityId], references: [id])
+  schema      Json // e.g. {grade, moisture, defect, variety} per plan.md §20
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@index([commodityId])
+  @@map("commodity_quality_schemas")
+}
+
+model SupplyLot {
+  id          String    @id @default(cuid())
+  koperasiRef String    @map("koperasi_ref")
+  commodityId String    @map("commodity_id")
+  commodity   Commodity @relation(fields: [commodityId], references: [id])
+  memberRef   String?   @map("member_ref") // anggota_ref, no hard FK (future entity)
+  quantity    Decimal   @db.Decimal(18, 2)
+  unit        String
+  status      String    @default("DRAFT") // plan.md §24 lifecycle
+  harvestDate DateTime? @map("harvest_date")
+  location    String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  qualityRecords QualityRecord[]
+  inventoryLots  InventoryLot[]
+  shipmentLots   ShipmentLot[]
+
+  @@index([koperasiRef])
+  @@index([commodityId])
+  @@map("supply_lots")
+}
+
+model QualityRecord {
+  id                 String    @id @default(cuid())
+  supplyLotId        String    @map("supply_lot_id")
+  supplyLot          SupplyLot @relation(fields: [supplyLotId], references: [id])
+  grade              String?
+  moisture            Decimal?  @db.Decimal(6, 2)
+  defect             String?
+  testedBy           String?   @map("tested_by")
+  testedAt           DateTime? @map("tested_at")
+  verificationStatus String?   @map("verification_status")
+  createdAt          DateTime  @default(now()) @map("created_at")
+
+  @@index([supplyLotId])
+  @@map("quality_records")
+}
+
+model InventoryLot {
+  id             String     @id @default(cuid())
+  supplyLotId    String     @map("supply_lot_id")
+  supplyLot      SupplyLot  @relation(fields: [supplyLotId], references: [id])
+  facilityId     String?    @map("facility_id")
+  facility       Facility?  @relation(fields: [facilityId], references: [id])
+  quantity       Decimal    @db.Decimal(18, 2)
+  condition      String?
+  reservedQty    Decimal?   @map("reserved_qty") @db.Decimal(18, 2)
+  availableQty   Decimal?   @map("available_qty") @db.Decimal(18, 2)
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+
+  @@index([supplyLotId])
+  @@index([facilityId])
+  @@map("inventory_lots")
+}
+
+model Buyer {
+  id            String   @id @default(cuid())
+  companyName   String   @map("company_name")
+  contactName   String?  @map("contact_name")
+  contactEmail  String?  @map("contact_email")
+  contactPhone  String?  @map("contact_phone")
+  kybStatus     String?  @map("kyb_status")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  rfqs      RFQ[]
+  contracts Contract[]
+
+  @@map("buyers")
+}
+
+model RFQ {
+  id          String     @id @default(cuid())
+  buyerId     String     @map("buyer_id")
+  buyer       Buyer      @relation(fields: [buyerId], references: [id])
+  commodityId String     @map("commodity_id")
+  commodity   Commodity  @relation(fields: [commodityId], references: [id])
+  quantity    Decimal    @db.Decimal(18, 2)
+  unit        String
+  moq         Decimal?   @db.Decimal(18, 2)
+  targetPrice Decimal?   @map("target_price") @db.Decimal(18, 2)
+  status      String     @default("DRAFT") // plan.md §24 lifecycle
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  items      RFQItem[]
+  offers     Offer[]
+  pools      Pool[]
+  contracts  Contract[]
+
+  @@index([buyerId])
+  @@index([commodityId])
+  @@map("rfqs")
+}
+
+model RFQItem {
+  id        String @id @default(cuid())
+  rfqId     String @map("rfq_id")
+  rfq       RFQ    @relation(fields: [rfqId], references: [id])
+  specKey   String @map("spec_key")
+  specValue String @map("spec_value")
+
+  @@index([rfqId])
+  @@map("rfq_items")
+}
+
+model Offer {
+  id          String   @id @default(cuid())
+  rfqId       String   @map("rfq_id")
+  rfq         RFQ      @relation(fields: [rfqId], references: [id])
+  koperasiRef String   @map("koperasi_ref")
+  quotedPrice Decimal  @map("quoted_price") @db.Decimal(18, 2)
+  quantity    Decimal  @db.Decimal(18, 2)
+  status      String   @default("PENDING")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([rfqId])
+  @@index([koperasiRef])
+  @@map("offers")
+}
+
+model Pool {
+  id             String   @id @default(cuid())
+  rfqId          String   @map("rfq_id")
+  rfq            RFQ      @relation(fields: [rfqId], references: [id])
+  leadKoperasiRef String  @map("lead_koperasi_ref")
+  status         String   @default("FORMING")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  allocations PoolAllocation[]
+
+  @@index([rfqId])
+  @@map("pools")
+}
+
+model PoolAllocation {
+  id                String   @id @default(cuid())
+  poolId            String   @map("pool_id")
+  pool              Pool     @relation(fields: [poolId], references: [id])
+  koperasiRef       String   @map("koperasi_ref")
+  allocatedQuantity Decimal  @map("allocated_quantity") @db.Decimal(18, 2)
+  coordinationFee   Decimal? @map("coordination_fee") @db.Decimal(18, 2)
+
+  @@index([poolId])
+  @@index([koperasiRef])
+  @@map("pool_allocations")
+}
+
+model Contract {
+  id             String   @id @default(cuid())
+  rfqId          String?  @map("rfq_id")
+  rfq            RFQ?     @relation(fields: [rfqId], references: [id])
+  buyerId        String   @map("buyer_id")
+  buyer          Buyer    @relation(fields: [buyerId], references: [id])
+  koperasiRef    String   @map("koperasi_ref")
+  contractNumber String?  @map("contract_number")
+  terms          Json?
+  signedAt       DateTime? @map("signed_at")
+  status         String   @default("DRAFT")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  purchaseOrders PurchaseOrder[]
+  invoices       Invoice[]
+  settlements    Settlement[]
+
+  @@index([buyerId])
+  @@index([koperasiRef])
+  @@map("contracts")
+}
+
+model PurchaseOrder {
+  id         String   @id @default(cuid())
+  contractId String   @map("contract_id")
+  contract   Contract @relation(fields: [contractId], references: [id])
+  poNumber   String?  @map("po_number")
+  quantity   Decimal  @db.Decimal(18, 2)
+  price      Decimal  @db.Decimal(18, 2)
+  status     String   @default("DRAFT")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  shipments Shipment[]
+
+  @@index([contractId])
+  @@map("purchase_orders")
+}
+
+model Shipment {
+  id                String   @id @default(cuid())
+  purchaseOrderId   String   @map("purchase_order_id")
+  purchaseOrder     PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  status            String   @default("SCHEDULED")
+  pickupDate        DateTime? @map("pickup_date")
+  deliveryDate      DateTime? @map("delivery_date")
+  proofOfDeliveryUrl String?  @map("proof_of_delivery_url")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  shipmentLots      ShipmentLot[]
+  logisticsQuotes   LogisticsQuote[]
+  qualityInspections QualityInspection[]
+
+  @@index([purchaseOrderId])
+  @@map("shipments")
+}
+
+model ShipmentLot {
+  id          String    @id @default(cuid())
+  shipmentId  String    @map("shipment_id")
+  shipment    Shipment  @relation(fields: [shipmentId], references: [id])
+  supplyLotId String    @map("supply_lot_id")
+  supplyLot   SupplyLot @relation(fields: [supplyLotId], references: [id])
+  quantity    Decimal   @db.Decimal(18, 2)
+
+  @@index([shipmentId])
+  @@index([supplyLotId])
+  @@map("shipment_lots")
+}
+
+model LogisticsQuote {
+  id          String    @id @default(cuid())
+  shipmentId  String?   @map("shipment_id")
+  shipment    Shipment? @relation(fields: [shipmentId], references: [id])
+  provider    String?
+  cost        Decimal?  @db.Decimal(18, 2)
+  vehicleType String?   @map("vehicle_type")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@index([shipmentId])
+  @@map("logistics_quotes")
+}
+
+model QualityInspection {
+  id          String   @id @default(cuid())
+  shipmentId  String   @map("shipment_id")
+  shipment    Shipment @relation(fields: [shipmentId], references: [id])
+  inspector   String?
+  result      String?
+  notes       String?
+  inspectedAt DateTime? @map("inspected_at")
+
+  @@index([shipmentId])
+  @@map("quality_inspections")
+}
+
+model Invoice {
+  id            String   @id @default(cuid())
+  contractId    String   @map("contract_id")
+  contract      Contract @relation(fields: [contractId], references: [id])
+  invoiceNumber String?  @map("invoice_number")
+  amount        Decimal  @db.Decimal(18, 2)
+  dueDate       DateTime? @map("due_date")
+  status        String   @default("PENDING")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  payments Payment[]
+
+  @@index([contractId])
+  @@map("invoices")
+}
+
+model Payment {
+  id        String   @id @default(cuid())
+  invoiceId String   @map("invoice_id")
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id])
+  amount    Decimal  @db.Decimal(18, 2)
+  method    String?
+  status    String   @default("PENDING")
+  paidAt    DateTime? @map("paid_at")
+
+  @@index([invoiceId])
+  @@map("payments")
+}
+
+model Settlement {
+  id          String   @id @default(cuid())
+  contractId  String   @map("contract_id")
+  contract    Contract @relation(fields: [contractId], references: [id])
+  totalAmount Decimal  @map("total_amount") @db.Decimal(18, 2)
+  status      String   @default("PENDING")
+  settledAt   DateTime? @map("settled_at")
+
+  lines SettlementLine[]
+
+  @@index([contractId])
+  @@map("settlements")
+}
+
+model SettlementLine {
+  id           String     @id @default(cuid())
+  settlementId String     @map("settlement_id")
+  settlement   Settlement @relation(fields: [settlementId], references: [id])
+  memberRef    String?    @map("member_ref")
+  amount       Decimal    @db.Decimal(18, 2)
+  description  String?
+
+  @@index([settlementId])
+  @@map("settlement_lines")
+}
+
+model Complaint {
+  id          String   @id @default(cuid())
+  koperasiRef String?  @map("koperasi_ref")
+  buyerId     String?  @map("buyer_id")
+  subject     String?
+  description String?
+  status      String   @default("OPEN") // plan.md §24 lifecycle
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([koperasiRef])
+  @@index([buyerId])
+  @@map("complaints")
+}
+
+model ConversationSession {
+  id            String   @id @default(cuid())
+  phoneNumber   String   @map("phone_number")
+  channel       String   @default("whatsapp")
+  state         Json?
+  startedAt     DateTime @default(now()) @map("started_at")
+  lastMessageAt DateTime? @map("last_message_at")
+
+  messages  Message[]
+  toolCalls ToolCall[]
+
+  @@index([phoneNumber])
+  @@map("conversation_sessions")
+}
+
+model Message {
+  id        String              @id @default(cuid())
+  sessionId String              @map("session_id")
+  session   ConversationSession @relation(fields: [sessionId], references: [id])
+  direction String // "inbound" | "outbound"
+  content   String?
+  mediaUrl  String?             @map("media_url")
+  createdAt DateTime            @default(now()) @map("created_at")
+
+  @@index([sessionId])
+  @@map("messages")
+}
+
+model ToolCall {
+  id        String              @id @default(cuid())
+  sessionId String              @map("session_id")
+  session   ConversationSession @relation(fields: [sessionId], references: [id])
+  toolName  String              @map("tool_name")
+  input     Json?
+  output    Json?
+  createdAt DateTime            @default(now()) @map("created_at")
+
+  @@index([sessionId])
+  @@map("tool_calls")
+}
+
+model DocumentSource {
+  id        String   @id @default(cuid())
+  title     String
+  content   String?
+  sourceUrl String?  @map("source_url")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  chunks EmbeddingChunk[]
+
+  @@map("document_sources")
+}
+
+/// embedding kept as a Json placeholder — pgvector extension is NOT installed
+/// locally (verified: no package present). Swap to Unsupported("vector(N)")
+/// once Docker (pgvector/pgvector:pg18) or a pgvector-enabled Postgres exists.
+model EmbeddingChunk {
+  id               String         @id @default(cuid())
+  documentSourceId String         @map("document_source_id")
+  documentSource   DocumentSource @relation(fields: [documentSourceId], references: [id])
+  chunkText        String         @map("chunk_text")
+  embedding        Json? // placeholder for pgvector — see doc-comment above
+  createdAt        DateTime       @default(now()) @map("created_at")
+
+  @@index([documentSourceId])
+  @@map("embedding_chunks")
+}
