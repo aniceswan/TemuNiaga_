@@ -15,11 +15,11 @@ export default async function AdminHomePage() {
 
   return (
     <AppShell appName="Admin & Pendamping" nav={<SiteNav />}>
-      <h1 className="mb-6 text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-50">Beranda Admin</h1>
+      <h1 className="mb-6 font-display text-2xl font-semibold tracking-tight text-stone-900 dark:text-stone-50">Beranda Admin</h1>
 
       <Card className="mb-8">
         <CardHeader>
-          <CardTitle>Koperasi Terdaftar</CardTitle>
+          <CardTitle variant="eyebrow">Koperasi Terdaftar</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-3xl font-bold text-brand-600 dark:text-brand-400">
@@ -35,9 +35,7 @@ export default async function AdminHomePage() {
         {READINESS_CATEGORIES.map((category) => (
           <Card key={category}>
             <CardHeader>
-              <CardTitle className="text-base normal-case tracking-normal text-stone-900 dark:text-stone-100">
-                {READINESS_LABELS[category].title}
-              </CardTitle>
+              <CardTitle>{READINESS_LABELS[category].title}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-stone-500 dark:text-stone-400">

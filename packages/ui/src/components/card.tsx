@@ -1,12 +1,18 @@
 import { forwardRef, type HTMLAttributes } from "react";
 import { cn } from "../lib/cn";
 
-export const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
+export interface CardProps extends HTMLAttributes<HTMLDivElement> {
+  /** Set true for cards in a hoverable grid (product cards, list items) to lift on hover. */
+  interactive?: boolean;
+}
+
+export const Card = forwardRef<HTMLDivElement, CardProps>(
+  ({ className, interactive, ...props }, ref) => (
     <div
       ref={ref}
       className={cn(
-        "rounded-xl border border-stone-200 bg-white shadow-card transition-shadow dark:border-brand-800/50 dark:bg-brand-900",
+        "rounded-xl2 border border-stone-200/80 bg-white shadow-card transition-all duration-200 dark:border-brand-800/50 dark:bg-brand-900",
+        interactive && "hover:-translate-y-0.5 hover:shadow-card-hover hover:border-brand-200 dark:hover:border-brand-700",
         className,
       )}
       {...props}
@@ -22,11 +28,22 @@ export const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEleme
 );
 CardHeader.displayName = "CardHeader";
 
-export const CardTitle = forwardRef<HTMLParagraphElement, HTMLAttributes<HTMLHeadingElement>>(
-  ({ className, ...props }, ref) => (
+export interface CardTitleProps extends HTMLAttributes<HTMLHeadingElement> {
+  /** "title" (default) is a warm serif heading for named content (product, section titles).
+   *  "eyebrow" is the small uppercase label used above a big stat number. */
+  variant?: "title" | "eyebrow";
+}
+
+export const CardTitle = forwardRef<HTMLParagraphElement, CardTitleProps>(
+  ({ className, variant = "title", ...props }, ref) => (
     <h3
       ref={ref}
-      className={cn("text-sm font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400", className)}
+      className={cn(
+        variant === "eyebrow"
+          ? "text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400"
+          : "font-display text-lg font-semibold leading-snug text-stone-900 dark:text-stone-100",
+        className,
+      )}
       {...props}
     />
   ),

@@ -8,7 +8,7 @@ export default async function DashboardProdukPage() {
 
   return (
     <AppShell appName="Kelola Produk Marketplace" nav={<SiteNav />}>
-      <h1 className="mb-1 text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-50">
+      <h1 className="mb-1 font-display text-2xl font-semibold tracking-tight text-stone-900 dark:text-stone-50">
         Kelola Produk Marketplace
       </h1>
       <p className="mb-6 max-w-2xl text-sm text-stone-500 dark:text-stone-400">

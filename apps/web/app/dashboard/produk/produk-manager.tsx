@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@temuniaga/ui";
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Input, Label, Select } from "@temuniaga/ui";
 import type { KoperasiSummary, ProdukSummary } from "@temuniaga/contracts";
 
 function formatRupiah(value: number): string {
@@ -82,22 +82,15 @@ export function ProdukManager({ koperasiList }: { koperasiList: KoperasiSummary[
   return (
     <div className="space-y-6">
       <div className="max-w-sm">
-        <label htmlFor="koperasi" className="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">
-          Koperasi
-        </label>
-        <select
-          id="koperasi"
-          value={koperasiRef}
-          onChange={(e) => loadProduk(e.target.value)}
-          className="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:border-stone-700 dark:bg-stone-900"
-        >
+        <Label htmlFor="koperasi">Koperasi</Label>
+        <Select id="koperasi" value={koperasiRef} onChange={(e) => loadProduk(e.target.value)}>
           <option value="">Pilih koperasi...</option>
           {koperasiList.map((k) => (
             <option key={k.koperasiRef} value={k.koperasiRef}>
               {k.namaKoperasi}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
 
       {message ? <p className="text-sm text-brand-600 dark:text-brand-400">{message}</p> : null}
@@ -109,37 +102,34 @@ export function ProdukManager({ koperasiList }: { koperasiList: KoperasiSummary[
           </CardHeader>
           <CardContent>
             <form onSubmit={handleCreate} className="grid grid-cols-1 gap-3 sm:grid-cols-4">
-              <input
+              <Input
                 type="text"
                 required
                 placeholder="Nama produk"
                 value={newProduk.namaProduk}
                 onChange={(e) => setNewProduk((p) => ({ ...p, namaProduk: e.target.value }))}
-                className="rounded-md border border-stone-300 px-3 py-2 text-sm dark:border-stone-700 dark:bg-stone-900 sm:col-span-2"
+                className="sm:col-span-2"
               />
-              <input
+              <Input
                 type="text"
                 placeholder="Satuan (kg, pcs, ...)"
                 value={newProduk.unit}
                 onChange={(e) => setNewProduk((p) => ({ ...p, unit: e.target.value }))}
-                className="rounded-md border border-stone-300 px-3 py-2 text-sm dark:border-stone-700 dark:bg-stone-900"
               />
-              <input
+              <Input
                 type="number"
                 required
                 min={1}
                 placeholder="Harga (Rp)"
                 value={newProduk.hargaJual}
                 onChange={(e) => setNewProduk((p) => ({ ...p, hargaJual: e.target.value }))}
-                className="rounded-md border border-stone-300 px-3 py-2 text-sm dark:border-stone-700 dark:bg-stone-900"
               />
-              <input
+              <Input
                 type="number"
                 min={0}
                 placeholder="Stok awal"
                 value={newProduk.stok}
                 onChange={(e) => setNewProduk((p) => ({ ...p, stok: e.target.value }))}
-                className="rounded-md border border-stone-300 px-3 py-2 text-sm dark:border-stone-700 dark:bg-stone-900"
               />
               <Button type="submit" disabled={creating} className="sm:col-span-4 sm:w-fit">
                 {creating ? "Menyimpan..." : "+ Tambah Produk"}
@@ -173,14 +163,14 @@ export function ProdukManager({ koperasiList }: { koperasiList: KoperasiSummary[
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <input
+                    <Input
                       type="number"
                       placeholder="Harga baru"
                       value={editingHarga[p.produkSampleId] ?? ""}
                       onChange={(e) =>
                         setEditingHarga((prev) => ({ ...prev, [p.produkSampleId]: e.target.value }))
                       }
-                      className="w-28 rounded-md border border-stone-300 px-2 py-1.5 text-sm dark:border-stone-700 dark:bg-stone-900"
+                      className="w-28 py-1.5"
                     />
                     <Button size="sm" variant="outline" onClick={() => handleUpdateHarga(p.produkSampleId)}>
                       Simpan

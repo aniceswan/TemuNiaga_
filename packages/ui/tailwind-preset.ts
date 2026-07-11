@@ -42,9 +42,14 @@ const preset: Partial<Config> = {
       },
       fontFamily: {
         sans: ["var(--font-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "ui-serif", "Georgia", "serif"],
       },
       boxShadow: {
         card: "0 1px 2px 0 rgb(0 0 0 / 0.04), 0 1px 3px 0 rgb(0 0 0 / 0.06)",
+        "card-hover": "0 8px 24px -8px rgb(43 102 64 / 0.18), 0 2px 8px -2px rgb(43 102 64 / 0.1)",
+      },
+      borderRadius: {
+        xl2: "1.25rem",
       },
     },
   },

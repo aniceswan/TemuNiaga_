@@ -8,7 +8,7 @@ export default async function WaRegistrationPage() {
 
   return (
     <AppShell appName="Registrasi WhatsApp" nav={<SiteNav />}>
-      <h1 className="mb-6 text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-50">
+      <h1 className="mb-6 font-display text-2xl font-semibold tracking-tight text-stone-900 dark:text-stone-50">
         Registrasi Nomor WhatsApp
       </h1>
       <div className="max-w-lg">

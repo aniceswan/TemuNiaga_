@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Card, CardContent, CardHeader, CardTitle } from "@temuniaga/ui";
+import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label, Select } from "@temuniaga/ui";
 import type { KoperasiSummary, AnggotaSummary } from "@temuniaga/contracts";
 
 const WA_BOT_PHONE = process.env.NEXT_PUBLIC_WA_BOT_PHONE;
@@ -61,36 +61,25 @@ export function WaRegisterForm({ koperasiList }: { koperasiList: KoperasiSummary
         </p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="koperasi" className="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">
-              Koperasi
-            </label>
-            <select
-              id="koperasi"
-              required
-              value={koperasiRef}
-              onChange={(e) => handleKoperasiChange(e.target.value)}
-              className="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:border-stone-700 dark:bg-stone-900"
-            >
+            <Label htmlFor="koperasi">Koperasi</Label>
+            <Select id="koperasi" required value={koperasiRef} onChange={(e) => handleKoperasiChange(e.target.value)}>
               <option value="">Pilih koperasi...</option>
               {koperasiList.map((k) => (
                 <option key={k.koperasiRef} value={k.koperasiRef}>
                   {k.namaKoperasi}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
           <div>
-            <label htmlFor="anggota" className="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">
-              Anggota
-            </label>
-            <select
+            <Label htmlFor="anggota">Anggota</Label>
+            <Select
               id="anggota"
               required
               disabled={!koperasiRef || loadingAnggota}
               value={anggotaRef}
               onChange={(e) => setAnggotaRef(e.target.value)}
-              className="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:border-stone-700 dark:bg-stone-900"
             >
               <option value="">{loadingAnggota ? "Memuat..." : "Pilih anggota..."}</option>
               {anggotaOptions.map((a) => (
@@ -98,21 +87,18 @@ export function WaRegisterForm({ koperasiList }: { koperasiList: KoperasiSummary
                   {a.nama ?? a.anggotaRef} ({a.anggotaRef})
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
           <div>
-            <label htmlFor="phone" className="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">
-              Nomor WhatsApp
-            </label>
-            <input
+            <Label htmlFor="phone">Nomor WhatsApp</Label>
+            <Input
               id="phone"
               type="text"
               required
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="628123456789"
-              className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:border-stone-700 dark:bg-stone-900"
             />
           </div>
 
@@ -126,7 +112,7 @@ export function WaRegisterForm({ koperasiList }: { koperasiList: KoperasiSummary
                   href={`https://wa.me/${WA_BOT_PHONE}?text=${encodeURIComponent("Halo TemuNiaga")}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-md bg-brand-600 px-3 py-2 text-sm font-medium text-white hover:bg-brand-700"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-700"
                 >
                   Buka Chat WhatsApp Bot →
                 </a>
