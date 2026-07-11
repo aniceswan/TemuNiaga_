@@ -4,13 +4,15 @@ import { useState } from "react";
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@temuniaga/ui";
 import type { KoperasiSummary, AnggotaSummary } from "@temuniaga/contracts";
 
+const WA_BOT_PHONE = process.env.NEXT_PUBLIC_WA_BOT_PHONE;
+
 export function WaRegisterForm({ koperasiList }: { koperasiList: KoperasiSummary[] }) {
   const [phone, setPhone] = useState("");
   const [koperasiRef, setKoperasiRef] = useState("");
   const [anggotaRef, setAnggotaRef] = useState("");
   const [anggotaOptions, setAnggotaOptions] = useState<AnggotaSummary[]>([]);
   const [loadingAnggota, setLoadingAnggota] = useState(false);
-  const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null);
+  const [result, setResult] = useState<{ ok: boolean; message: string; registeredPhone?: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   async function handleKoperasiChange(ref: string) {
@@ -39,7 +41,7 @@ export function WaRegisterForm({ koperasiList }: { koperasiList: KoperasiSummary
     const body = await res.json().catch(() => null);
 
     if (res.ok) {
-      setResult({ ok: true, message: `Nomor ${phone} berhasil didaftarkan.` });
+      setResult({ ok: true, message: `Nomor ${phone} berhasil didaftarkan.`, registeredPhone: phone });
       setPhone("");
     } else {
       setResult({ ok: false, message: body?.message ?? "Pendaftaran gagal." });
@@ -115,9 +117,21 @@ export function WaRegisterForm({ koperasiList }: { koperasiList: KoperasiSummary
           </div>
 
           {result ? (
-            <p className={`text-sm ${result.ok ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
-              {result.message}
-            </p>
+            <div className="space-y-2">
+              <p className={`text-sm ${result.ok ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
+                {result.message}
+              </p>
+              {result.ok && result.registeredPhone && WA_BOT_PHONE ? (
+                <a
+                  href={`https://wa.me/${WA_BOT_PHONE}?text=${encodeURIComponent("Halo TemuNiaga")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-md bg-brand-600 px-3 py-2 text-sm font-medium text-white hover:bg-brand-700"
+                >
+                  Buka Chat WhatsApp Bot →
+                </a>
+              ) : null}
+            </div>
           ) : null}
           <Button type="submit" disabled={submitting || !anggotaRef}>
             {submitting ? "Menyimpan..." : "Daftarkan"}

@@ -11,6 +11,8 @@ import { HargaModule } from "./harga/harga.module";
 import { PasokanModule } from "./pasokan/pasokan.module";
 import { SimpananModule } from "./simpanan/simpanan.module";
 import { WaModule } from "./wa/wa.module";
+import { ProdukModule } from "./produk/produk.module";
+import { PesananModule } from "./pesanan/pesanan.module";
 import { AuditInterceptor } from "./audit/audit.interceptor";
 
 @Module({
@@ -26,6 +28,8 @@ import { AuditInterceptor } from "./audit/audit.interceptor";
     PasokanModule,
     SimpananModule,
     WaModule,
+    ProdukModule,
+    PesananModule,
   ],
   providers: [{ provide: APP_INTERCEPTOR, useClass: AuditInterceptor }],
 })
