@@ -1,23 +1,9 @@
-import { prisma } from "@temuniaga/database";
 import { AppShell, Badge, Card, CardContent, CardHeader, CardTitle } from "@temuniaga/ui";
 import { SiteNav } from "../../components/site-nav";
-
-async function getKoperasiList() {
-  return prisma.koperasi.findMany({
-    take: 50,
-    orderBy: { namaKoperasi: "asc" },
-    select: {
-      koperasiRef: true,
-      namaKoperasi: true,
-      kategoriUsaha: true,
-      statusRegistrasi: true,
-      alamatLengkap: true,
-    },
-  });
-}
+import { getKoperasiList } from "../../lib/api";
 
 export default async function KoperasiDirectoryPage() {
-  const koperasiList = await getKoperasiList();
+  const { items: koperasiList } = await getKoperasiList(50);
 
   return (
     <AppShell appName="Jaringan Koperasi" nav={<SiteNav />}>

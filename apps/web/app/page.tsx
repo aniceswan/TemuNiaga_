@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { prisma } from "@temuniaga/database";
 import { AppShell, Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@temuniaga/ui";
 import { SiteNav } from "../components/site-nav";
+import { getDashboardTotals } from "../lib/api";
 
 const PILLARS = [
   {
@@ -22,13 +22,8 @@ const PILLARS = [
   },
 ];
 
-async function getStats() {
-  const [totalKoperasi, totalAnggota] = await Promise.all([prisma.koperasi.count(), prisma.anggota.count()]);
-  return { totalKoperasi, totalAnggota };
-}
-
 export default async function PublicHomePage() {
-  const { totalKoperasi, totalAnggota } = await getStats();
+  const { totalKoperasi, totalAnggota } = await getDashboardTotals();
 
   return (
     <AppShell appName="Beranda" nav={<SiteNav />}>

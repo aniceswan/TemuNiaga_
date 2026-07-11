@@ -83,9 +83,6 @@ importers:
       '@temuniaga/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
-      '@temuniaga/database':
-        specifier: workspace:*
-        version: link:../../packages/database
       '@temuniaga/shared-types':
         specifier: workspace:*
         version: link:../../packages/shared-types

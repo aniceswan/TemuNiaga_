@@ -1,30 +1,14 @@
-import { prisma } from "@temuniaga/database";
 import { AppShell, Badge, Card, CardContent, CardHeader, CardTitle } from "@temuniaga/ui";
 import { SiteNav } from "../../components/site-nav";
+import { getDashboardTotals, getKoperasiList } from "../../lib/api";
 
 async function getDashboardData() {
-  const [totalKoperasi, totalAnggota, simpananAgg, koperasiList] = await Promise.all([
-    prisma.koperasi.count(),
-    prisma.anggota.count(),
-    prisma.simpanan.aggregate({ _sum: { jumlahSimpanan: true } }),
-    prisma.koperasi.findMany({
-      take: 20,
-      orderBy: { namaKoperasi: "asc" },
-      select: {
-        koperasiRef: true,
-        namaKoperasi: true,
-        statusRegistrasi: true,
-        bentukKoperasi: true,
-        alamatLengkap: true,
-      },
-    }),
-  ]);
-
+  const [totals, koperasi] = await Promise.all([getDashboardTotals(), getKoperasiList(20)]);
   return {
-    totalKoperasi,
-    totalAnggota,
-    totalSimpanan: Number(simpananAgg._sum.jumlahSimpanan ?? 0),
-    koperasiList,
+    totalKoperasi: totals.totalKoperasi,
+    totalAnggota: totals.totalAnggota,
+    totalSimpanan: Number(totals.totalSimpanan),
+    koperasiList: koperasi.items,
   };
 }
 

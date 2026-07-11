@@ -50,6 +50,7 @@ psql -h 127.0.0.1 -p 5434 -U temuniaga -d postgres -c "CREATE DATABASE temuniaga
 
 # 3. Salin .env.example -> .env / .env.local di setiap package/app yang membutuhkan
 #    DATABASE_URL: postgresql://temuniaga@127.0.0.1:5434/temuniaga_dev
+#    (apps/web tidak butuh DATABASE_URL -- lihat "Mode Deployment" di bawah)
 cp packages/database/.env.example packages/database/.env
 cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env.local
@@ -100,6 +101,53 @@ Atau jalankan semua sekaligus: `pnpm dev` (via Turborepo).
 Untuk benar-benar menyambungkan WhatsApp: set `WA_ENABLED=true` di `apps/whatsapp-worker/.env`, jalankan `dev`, lalu scan QR code yang muncul di terminal dengan WhatsApp (Perangkat Tertaut). Sesi tersimpan di `apps/whatsapp-worker/wa-auth/` (gitignored) sehingga tidak perlu scan ulang setiap restart.
 
 Port dipilih untuk menghindari bentrok dengan proyek lain yang sudah berjalan di mesin ini (folder terpisah "TemuNiaga_vb_02" yang memakai 3000/3001/5433) — bukan bagian dari repo ini.
+
+## Mode Deployment
+
+`apps/web` tidak pernah mengakses database secara langsung — setiap halaman dan `app/api/auth/login`'s route handler memanggil `apps/api` lewat HTTP (`apps/web/lib/api.ts`), memakai satu env var: `API_BASE_URL`. Ini yang membuat 2 mode berikut mungkin tanpa mengubah kode sama sekali, cuma env var:
+
+### Mode 1: Full Lokal (default)
+
+Semua servis (`web`, `api`, `whatsapp-worker`, `ai-service`, Postgres) jalan di mesin yang sama, seperti dijelaskan di "Setup dari nol" di atas. `apps/web/.env.local` memakai `API_BASE_URL=http://localhost:3501`.
+
+### Mode 2: Frontend Deploy + Backend Lokal
+
+Backend (`api`, `whatsapp-worker`, `ai-service`, Postgres) tetap jalan di mesin Anda seperti Mode 1 — cuma `apps/api` perlu diekspos ke internet lewat tunnel, lalu `apps/web` dideploy ke Vercel dan diarahkan ke URL tunnel tersebut.
+
+**1. Ekspos `apps/api` (port 3501) lewat tunnel** — pilih salah satu, keduanya gratis dan tanpa perlu bikin server sendiri:
+
+```bash
+# Opsi A: Cloudflare quick tunnel -- tanpa akun/signup sama sekali
+npx cloudflared tunnel --url http://localhost:3501
+# -> mencetak URL publik seperti https://xxxx-xxxx.trycloudflare.com
+
+# Opsi B: ngrok -- perlu akun gratis + authtoken (ngrok config add-authtoken <token>)
+npx ngrok http 3501
+# -> mencetak URL publik seperti https://xxxx.ngrok-free.app
+```
+
+Catat URL publik tersebut (HTTPS). `app.enableCors()` sudah aktif di `apps/api/src/main.ts` (mengizinkan semua origin), jadi tidak perlu konfigurasi CORS tambahan.
+
+**2. Deploy `apps/web` ke Vercel:**
+
+```bash
+npx vercel --cwd apps/web
+# atau hubungkan repo GitHub ini ke Vercel dan set:
+#   Root Directory: apps/web
+```
+
+Di dashboard Vercel (atau lewat `vercel env add`), set environment variable:
+
+```
+API_BASE_URL=https://xxxx-xxxx.trycloudflare.com   # URL tunnel dari langkah 1
+```
+
+Deploy ulang. `apps/web` yang berjalan di Vercel sekarang memanggil `apps/api` di mesin lokal Anda lewat tunnel — semua fitur (koperasi, dashboard, login, admin) jalan sama seperti Mode 1.
+
+**Catatan:**
+- Tunnel gratis (baik Cloudflare quick tunnel maupun ngrok free tier) memberi URL baru setiap kali dijalankan ulang — update `API_BASE_URL` di Vercel tiap kali tunnel di-restart, atau pakai tunnel berbayar/akun untuk URL tetap.
+- Backend (Postgres, `apps/api`, dll) harus tetap menyala selama demo — tunnel hanya meneruskan trafik, bukan hosting.
+- Mode ini belum diuji lewat deployment Vercel/tunnel sungguhan di lingkungan pengembangan repo ini (tidak ada akses internet keluar untuk Vercel/Cloudflare/ngrok saat scaffold ini dibuat) — yang sudah diverifikasi adalah bagian intinya: `apps/web` benar-benar nol import Prisma/database dan 100% jalan lewat `fetch()` ke `apps/api`, jadi mengarahkan `API_BASE_URL` ke URL manapun (lokal atau tunnel) seharusnya bekerja identik.
 
 ## Verifikasi
 

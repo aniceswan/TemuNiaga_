@@ -1,7 +1,7 @@
-import { prisma } from "@temuniaga/database";
 import { AppShell, Card, CardContent, CardHeader, CardTitle } from "@temuniaga/ui";
 import { READINESS_CATEGORIES } from "@temuniaga/shared-types";
 import { SiteNav } from "../../components/site-nav";
+import { getDashboardTotals } from "../../lib/api";
 
 const READINESS_LABELS: Record<(typeof READINESS_CATEGORIES)[number], { title: string; description: string }> = {
   KURANG_SIAP: { title: "Kurang Siap", description: "Belum memenuhi persyaratan transaksi." },
@@ -10,12 +10,8 @@ const READINESS_LABELS: Record<(typeof READINESS_CATEGORIES)[number], { title: s
   LEAD_READY: { title: "Lead-ready", description: "Dapat menjadi koordinator atau legal seller." },
 };
 
-async function getKoperasiCount() {
-  return prisma.koperasi.count();
-}
-
 export default async function AdminHomePage() {
-  const koperasiCount = await getKoperasiCount();
+  const { totalKoperasi: koperasiCount } = await getDashboardTotals();
 
   return (
     <AppShell appName="Admin & Pendamping" nav={<SiteNav />}>
