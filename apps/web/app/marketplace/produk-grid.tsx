@@ -11,33 +11,12 @@ function formatRupiah(value: number): string {
   );
 }
 
-// Deterministic per-product accent so the placeholder art tile isn't
-// monotonous across a full grid of products without real photos yet.
-const TILE_GRADIENTS = [
-  "from-brand-200 to-brand-400",
-  "from-harvest-200 to-harvest-400",
-  "from-brand-300 to-brand-500",
-  "from-harvest-100 to-harvest-300",
-];
-
-function tileGradient(id: string): string {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
-  return TILE_GRADIENTS[hash % TILE_GRADIENTS.length];
-}
-
-function ProductGlyph() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-9 w-9 text-white/90" aria-hidden>
-      <path
-        d="M21 8.5 12 4 3 8.5m18 0L12 13m9-4.5v8L12 21m0-8L3 8.5m9 4.5v8m-9-8v8l9 4"
-        stroke="currentColor"
-        strokeWidth={1.6}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
+// No per-product photography exists in the dataset yet -- until koperasi
+// upload real photos, each product gets a deterministic stock photo (same
+// product always shows the same image) from Lorem Picsum instead of an
+// icon placeholder.
+function stockPhotoUrl(id: string): string {
+  return `https://picsum.photos/seed/${encodeURIComponent(id)}/400/400`;
 }
 
 export function ProdukGrid({ items }: { items: ProdukSummary[] }) {
@@ -68,10 +47,14 @@ export function ProdukGrid({ items }: { items: ProdukSummary[] }) {
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
       {items.map((item) => (
         <Card key={item.produkSampleId} interactive className="flex flex-col overflow-hidden">
-          <div
-            className={`flex aspect-square items-center justify-center bg-gradient-to-br ${tileGradient(item.produkSampleId)}`}
-          >
-            <ProductGlyph />
+          <div className="aspect-square overflow-hidden bg-stone-100 dark:bg-brand-950/40">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={stockPhotoUrl(item.produkSampleId)}
+              alt={item.namaProduk ?? "Produk"}
+              loading="lazy"
+              className="h-full w-full object-cover"
+            />
           </div>
           <CardContent className="flex flex-1 flex-col gap-2 p-3.5">
             <CardTitle className="line-clamp-2 min-h-[2.5rem] text-sm font-medium leading-snug">
