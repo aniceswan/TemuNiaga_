@@ -36,7 +36,39 @@ db_export/               Data CSV asli (sumber seed)
 - `espeak-ng` (fallback TTS lokal) dan `openai-whisper` (`pip install openai-whisper`, menyediakan CLI `whisper`) untuk `apps/whatsapp-worker`
 - Tidak perlu sistem `ffmpeg` — `ffmpeg-static` (npm) menyediakan binary sendiri
 
-## Setup dari nol
+## Setup dan menjalankan (1 baris)
+
+```bash
+pnpm bootstrap   # sekali saja: install, init Postgres lokal, migrate, seed, buat akun demo
+pnpm start       # setiap mau jalan: start Postgres (jika belum) + api + web + whatsapp-worker + ai-service sekaligus
+```
+
+(Skrip dinamai `bootstrap`, bukan `setup` -- `pnpm setup` sudah dipakai pnpm sendiri untuk hal lain, jadi nama itu dihindari supaya tidak bentrok.)
+
+`pnpm bootstrap` (`scripts/setup.sh`) melakukan semuanya: cek prasyarat, `pnpm install`, `initdb`+start PostgreSQL lokal (tanpa Docker), bikin database, salin semua `.env.example` -> `.env`/`.env.local` yang belum ada, migrate + seed dari `db_export/*.csv`, buat akun demo (`admin@temuniaga.dev` / `adminpassword`), dan siapkan venv `apps/ai-service` kalau `uv` tersedia. Aman dijalankan ulang (idempotent).
+
+`pnpm start` (`scripts/start.sh`) memastikan Postgres lokal jalan lalu menjalankan `api` (3501), `web` (3010), `whatsapp-worker` (4001, healthz), dan `ai-service` (8000) sekaligus lewat Turborepo — tekan `Ctrl+C` sekali untuk stop semuanya.
+
+Setelah `pnpm bootstrap`, satu langkah manual yang tersisa (isi API key/nomor WA, tidak bisa diotomatisasi):
+
+```bash
+# Isi GEMINI_API_KEY di apps/whatsapp-worker/.env untuk NLP fallback + TTS suara natural
+# (tanpa key: keyword HARGA/LAPOR/STATUS tetap jalan, TTS jatuh ke espeak-ng)
+
+# Daftarkan nomor WA Anda ke seorang anggota nyata (setelah 'pnpm start' jalan):
+curl -X POST http://localhost:3501/wa/register -H "Content-Type: application/json" \
+  -d '{"phone":"628xxxxxxxxxx","anggotaRef":"AGT-xxxx","koperasiRef":"KOP-xxxx"}'
+
+# Untuk benar-benar menyambungkan WhatsApp: set WA_ENABLED=true di
+# apps/whatsapp-worker/.env sebelum 'pnpm start', lalu scan QR yang muncul
+# di terminal dengan WhatsApp (Perangkat Tertaut). Sesi tersimpan di
+# apps/whatsapp-worker/wa-auth/ (gitignored), tidak perlu scan ulang tiap restart.
+```
+
+### Setup manual (kalau `pnpm bootstrap` gagal di langkah tertentu)
+
+<details>
+<summary>Klik untuk lihat langkah manual step-by-step</summary>
 
 ```bash
 # 1. Install semua dependency Node
@@ -55,8 +87,6 @@ cp packages/database/.env.example packages/database/.env
 cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env.local
 cp apps/whatsapp-worker/.env.example apps/whatsapp-worker/.env
-# Isi GEMINI_API_KEY di apps/whatsapp-worker/.env untuk NLP fallback + TTS suara natural
-# (tanpa key: keyword HARGA/LAPOR/STATUS tetap jalan, TTS jatuh ke espeak-ng)
 
 # 4. Migrasi schema + seed data dari db_export/*.csv
 pnpm db:migrate
@@ -66,7 +96,6 @@ pnpm db:seed
 pnpm --filter @temuniaga/ai-service run setup
 
 # 6. Buat akun demo untuk login ke /dashboard dan /admin di apps/web
-#    (auth beneran lewat JWT + bcrypt di apps/api, bukan cek hardcode)
 cd packages/database && pnpm exec tsx -e "
 import { prisma } from './src/index';
 import bcrypt from 'bcryptjs';
@@ -79,15 +108,9 @@ import bcrypt from 'bcryptjs';
   });
 })().finally(() => prisma.\$disconnect());
 " && cd ../..
-# Login demo: admin@temuniaga.dev / adminpassword
-
-# 7. Daftarkan nomor WA Anda ke seorang anggota nyata sebelum bot merespons pesan
-#    (jalankan setelah apps/api hidup):
-curl -X POST http://localhost:3501/wa/register -H "Content-Type: application/json" \
-  -d '{"phone":"628xxxxxxxxxx","anggotaRef":"AGT-xxxx","koperasiRef":"KOP-xxxx"}'
 ```
 
-## Menjalankan aplikasi
+Lalu jalankan tiap app satu-satu kalau perlu, bukan lewat `pnpm start`:
 
 | App | Perintah | Port |
 |---|---|---|
@@ -96,9 +119,7 @@ curl -X POST http://localhost:3501/wa/register -H "Content-Type: application/jso
 | whatsapp-worker | `pnpm --filter @temuniaga/whatsapp-worker run dev` | 4001 (healthz) |
 | ai-service | `pnpm --filter @temuniaga/ai-service run dev` | 8000 |
 
-Atau jalankan semua sekaligus: `pnpm dev` (via Turborepo).
-
-Untuk benar-benar menyambungkan WhatsApp: set `WA_ENABLED=true` di `apps/whatsapp-worker/.env`, jalankan `dev`, lalu scan QR code yang muncul di terminal dengan WhatsApp (Perangkat Tertaut). Sesi tersimpan di `apps/whatsapp-worker/wa-auth/` (gitignored) sehingga tidak perlu scan ulang setiap restart.
+</details>
 
 Port dipilih untuk menghindari bentrok dengan proyek lain yang sudah berjalan di mesin ini (folder terpisah "TemuNiaga_vb_02" yang memakai 3000/3001/5433) — bukan bagian dari repo ini.
 
